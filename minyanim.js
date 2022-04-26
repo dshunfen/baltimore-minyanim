@@ -81,7 +81,7 @@ const SHUL_MAP = {
 function minyanUpdate() {
   const inbox = GmailApp.getInboxThreads();
   inbox.forEach(m => {
-    //try {
+    try {
       const msgs = m.getMessages();
       const firstMsg = msgs[0];
       if(firstMsg.getTo() !== 'baltimoreminyan+times@gmail.com') {
@@ -105,9 +105,9 @@ function minyanUpdate() {
       } else {
         GmailApp.sendEmail(firstMsg.getFrom(), null, `You must supply a time for this tefilah`);
       }
-    //} finally {
+    } finally {
       m.moveToTrash();
-    //}
+    }
   });
 }
 
