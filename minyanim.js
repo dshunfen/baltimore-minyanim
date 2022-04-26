@@ -84,26 +84,29 @@ function minyanUpdate() {
     try {
       const msgs = m.getMessages();
       const firstMsg = msgs[0];
-      if(firstMsg.getTo() !== 'baltimoreminyan+times@gmail.com') {
-        return;
-      }
+      console.log(firstMsg.getRawContent());
       const firstMsgBody = firstMsg.getPlainBody().trim();
+      const inputTime = getDate(firstMsgBody);
 
-      if(firstMsgBody.toLowerCase().includes("help")) {
-        GmailApp.sendEmail(firstMsg.getFrom(), null, "Supply the start time you'd like.\nExamples: \"now\", \"6 am\" or \"2PM\"");
+      if(firstMsgBody.toLowerCase() === "help") {
+        sendMail(firstMsg, "Supply the start time you'd like.\nExamples: \"now\", \"6 am\" or \"2PM\"");
         return;
       }
 
-      const hour = firstMsgBody ? getDate(firstMsgBody) : new Date();
+      if(!inputTime) {
+        return;
+      }
+
+      const time = firstMsgBody && firstMsgBody.toLowerCase() !== "now" ? inputTime : new Date();
 
       const minyanList = fetchMinyanim();
-      const replies = chunkReplies(minyanList, hour);
+      const replies = chunkReplies(minyanList, time);
 
       const minyanReply = replies[0];
       if(minyanReply) {
-        GmailApp.sendEmail(firstMsg.getFrom(), null, minyanReply);
+        sendMail(firstMsg, minyanReply);
       } else {
-        GmailApp.sendEmail(firstMsg.getFrom(), null, `You must supply a time for this tefilah`);
+        sendMail(firstMsg, `There are no tefilah times today past ${shortTime(time)}`);
       }
     } finally {
       m.moveToTrash();
@@ -139,7 +142,7 @@ function chunkReplies(minyanList, startTime) {
   minyanList = minyanList.filter(([shul,time]) => time >= startTime);
   for(let [shul, time] of minyanList) {
     const shulShort = SHUL_MAP[shul];
-    const timeShort = time.toLocaleTimeString('en-US', {timeStyle: "short"});
+    const timeShort = shortTime(time);
     if(!shulShort) {
       continue;
     }
@@ -159,12 +162,24 @@ function chunkReplies(minyanList, startTime) {
 }
 
 function getDate(inputTime) {
-  const {hours, minutes, meridiem} = inputTime.match(/(?<hours>\d*):?(?<minutes>\d*)?\s*(?<meridiem>[a-zA-Z]*)?/).groups
-  const PM = meridiem.toLowerCase() === 'pm';
-  const hoursFull = (+hours % 12) + (PM ? 12 : 0);
-  let time = new Date();
-  time.setHours(hoursFull);
-  time.setMinutes(minutes ? minutes : 0);
-  time.setSeconds(0,0);
-  return time;
+  let time;
+  try {
+    time = new Date()
+    const {hours, minutes, meridiem} = inputTime.match(/(?<hours>\d*):?(?<minutes>\d*)?\s*(?<meridiem>[a-zA-Z]*)?/).groups
+    const PM = meridiem.toLowerCase() === 'pm';
+    const hoursFull = (+hours % 12) + (PM ? 12 : 0);
+    time.setHours(hoursFull);
+    time.setMinutes(minutes ? minutes : 0);
+    time.setSeconds(0,0);
+  } finally {
+    return time;
+  }
+}
+
+function sendMail(msg, body) {
+  GmailApp.sendEmail(msg.getFrom(), null, body);
+}
+
+function shortTime(date) {
+  return date.toLocaleTimeString('en-US', {timeStyle: "short"});
 }
