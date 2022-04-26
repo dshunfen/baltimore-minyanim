@@ -1,3 +1,4 @@
+const DEFAULT_PAGESIZE = 8
 const SHUL_MAP = {
   'Adath Yeshurun Mogen Abraham': "Adas Yeshurun",
   'Agudah of Greenspring / Adath Yeshurun Mogen Abraham': "Schukatowitz",
@@ -81,10 +82,11 @@ function minyanUpdate() {
       const msgs = m.getMessages();
       const firstMsg = msgs[0];
       const firstMsgBody = firstMsg.getPlainBody().trim();
-      const inputTime = getDate(firstMsgBody);
+      const [inputTime, pagesize] = getDateAndPagesize(firstMsgBody);
 
       if(firstMsgBody.toLowerCase() === "help") {
-        sendMail(firstMsg, "Supply the start time you'd like.\nExamples: \"now\", \"6 am\" or \"2PM\"");
+        sendMail(firstMsg, "Supply the start time for minyanim (and optional result size) you'd like.\nExamples: \"now\", \"6am 10\" or \"2PM\"");
+        m.moveToTrash();
         return;
       }
 
@@ -95,11 +97,10 @@ function minyanUpdate() {
       const time = firstMsgBody && firstMsgBody.toLowerCase() !== "now" ? inputTime : new Date();
 
       const minyanList = fetchMinyanim();
-      const replies = chunkReplies(minyanList, time);
+      const replies = chunkReplies(minyanList, time, pagesize);
 
-      const minyanReply = replies[0];
-      if(minyanReply) {
-        sendMail(firstMsg, minyanReply);
+      if(replies.length) {
+        replies.forEach(reply => sendMail(firstMsg, reply));
       } else {
         sendMail(firstMsg, `There are no tefilah times today past ${shortTime(time)}`);
       }
@@ -122,7 +123,7 @@ function fetchMinyanim() {
     const minyanim = minyanElements.map(minyanElement => {
       const minyanElemChildren = minyanElement.getChildren('li');
       const shul = minyanElemChildren[0].getChildText('div').trim();
-      const time = getDate(minyanElemChildren[1].getText().trim());
+      const [time, _] = getDateAndPagesize(minyanElemChildren[1].getText().trim());
       return [shul, time];
     });
     return minyanim;
@@ -130,20 +131,19 @@ function fetchMinyanim() {
   return minyanimList;
 }
 
-function chunkReplies(minyanList, startTime) {
+function chunkReplies(minyanList, startTime, pagesize) {
   let chunkCount = 0;
   let replies = [];
   let replyBuffer = "";
-  minyanList = minyanList.filter(([shul,time]) => time >= startTime);
+  minyanList = minyanList
+    .filter(([_, time]) => time >= startTime)
+    .map(([shul, time]) => [SHUL_MAP[shul], shortTime(time)])
+    .filter(([shul, _]) => shul)
+    .slice(0, pagesize);
   for(let [shul, time] of minyanList) {
-    const shulShort = SHUL_MAP[shul];
-    const timeShort = shortTime(time);
-    if(!shulShort) {
-      continue;
-    }
-    if(chunkCount + shulShort.length + timeShort.length + 1 < 119) {
-      replyBuffer += `${shulShort} ${timeShort}\n`;
-      chunkCount += shulShort.length + timeShort.length + 1;
+    replyBuffer += `${shul} ${time}\n`;
+    if(chunkCount + shul.length + time.length + 2 < 119) {
+      chunkCount += shul.length + time.length + 2;
     } else {
       replies.push(replyBuffer.slice());
       replyBuffer = "";
@@ -156,18 +156,20 @@ function chunkReplies(minyanList, startTime) {
   return replies;
 }
 
-function getDate(inputTime) {
+function getDateAndPagesize(input) {
   let time;
+  let _pagesize = DEFAULT_PAGESIZE;
   try {
     time = new Date()
-    const {hours, minutes, meridiem} = inputTime.match(/(?<hours>\d*):?(?<minutes>\d*)?\s*(?<meridiem>[a-zA-Z]*)?/).groups
+    const {hours, minutes, meridiem, pagesize} = input.match(/(?<hours>\d*):?(?<minutes>\d*)?\s*(?<meridiem>[a-zA-Z]*)?\s*(?<pagesize>\d*)/).groups
+    _pagesize = pagesize;
     const PM = meridiem.toLowerCase() === 'pm';
     const hoursFull = (+hours % 12) + (PM ? 12 : 0);
     time.setHours(hoursFull);
     time.setMinutes(minutes ? minutes : 0);
     time.setSeconds(0,0);
   } finally {
-    return time;
+    return [time, _pagesize];
   }
 }
 
