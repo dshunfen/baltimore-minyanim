@@ -1,4 +1,4 @@
-const DEFAULT_PAGESIZE = 8
+const DEFAULT_PAGESIZE = 7
 const SHUL_MAP = {
   'Adath Yeshurun Mogen Abraham': "Adas Yeshurun",
   'Agudah of Greenspring / Adath Yeshurun Mogen Abraham': "Schuchatowitz",
@@ -81,10 +81,10 @@ function minyanUpdate() {
     try {
       const msgs = m.getMessages();
       const firstMsg = msgs[0];
-      const firstMsgBody = firstMsg.getPlainBody().trim();
+      const firstMsgBody = firstMsg.getPlainBody().toLowerCase().replace("multimedia message", "").trim();
       const [inputTime, pagesize] = getDateAndPagesize(firstMsgBody);
 
-      if(firstMsgBody.toLowerCase() === "help") {
+      if(firstMsgBody == "help") {
         sendMail(firstMsg, "Supply the start time for minyanim (and optional result size) you'd like.\nExamples: \"now\", \"6am 10\" or \"2PM\"");
         m.moveToTrash();
         return;
@@ -94,7 +94,7 @@ function minyanUpdate() {
         return;
       }
 
-      const time = firstMsgBody && firstMsgBody.toLowerCase() !== "now" ? inputTime : new Date();
+      const time = firstMsgBody && firstMsgBody !== "now" ? inputTime : new Date();
 
       const minyanList = fetchMinyanim();
       const replies = chunkReplies(minyanList, time, pagesize);
@@ -163,7 +163,7 @@ function getDateAndPagesize(input) {
     time = new Date()
     const {hours, minutes, meridiem, pagesize} = input.match(/(?<hours>\d*):?(?<minutes>\d*)?\s*(?<meridiem>[a-zA-Z]*)?\s*(?<pagesize>\d*)/).groups
     _pagesize = pagesize ? pagesize : _pagesize;
-    const PM = meridiem.toLowerCase() === 'pm';
+    const PM = meridiem === 'pm';
     const hoursFull = (+hours % 12) + (PM ? 12 : 0);
     time.setHours(hoursFull);
     time.setMinutes(minutes ? minutes : 0);
