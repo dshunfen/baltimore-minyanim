@@ -81,42 +81,38 @@ const SHUL_MAP = {
 function minyanUpdate() {
   const inbox = GmailApp.getInboxThreads();
   inbox.forEach(m => {
-    try {
+    //try {
       const msgs = m.getMessages();
-      const lastMsg = msgs[msgs.length - 1];
-      const lastMsgBody = lastMsg.getPlainBody();
+      const firstMsg = msgs[0];
+      if(firstMsg.getTo() !== 'baltimoreminyan+times@gmail.com') {
+        return;
+      }
+      const firstMsgBody = firstMsg.getPlainBody().trim();
 
-      if(lastMsgBody.toLowerCase().includes("help")) {
-        GmailApp.sendEmail(lastMsg.getFrom(), null, "Supply the tefilah (and optional chunk of minyanim) you'd like.\nExamples: \"Minchah\" or \"S 2\"");
+      if(firstMsgBody.toLowerCase().includes("help")) {
+        GmailApp.sendEmail(firstMsg.getFrom(), null, "Supply the start time you'd like.\nExamples: \"now\", \"6 am\" or \"2PM\"");
+        return;
       }
 
-      const [tefilah, _chunk] = lastMsgBody.split(" ");
-      const chunk = _chunk ? _chunk : 1;
+      const hour = firstMsgBody ? getDate(firstMsgBody) : new Date();
 
-      const minyanList = fetchMinyanim(tefilah);
-      const replies = chunkReplies(minyanList);
+      const minyanList = fetchMinyanim();
+      const replies = chunkReplies(minyanList, hour);
 
-      const minyanReply = replies[chunk - 1];
+      const minyanReply = replies[0];
       if(minyanReply) {
-        GmailApp.sendEmail(lastMsg.getFrom(), null, minyanReply);
+        GmailApp.sendEmail(firstMsg.getFrom(), null, minyanReply);
       } else {
-        GmailApp.sendEmail(lastMsg.getFrom(), null, `You must supply a chunk that is between 1 and ${replies.length}`);
+        GmailApp.sendEmail(firstMsg.getFrom(), null, `You must supply a time for this tefilah`);
       }
-    } finally {
+    //} finally {
       m.moveToTrash();
-    }
+    //}
   });
 }
 
-function fetchMinyanim(tefilah) {
-  let tefilahAbbrev = ["SH"];
-  if(SHACHARIS_KEYS.includes(tefilah.toLowerCase())) {
-    tefilahAbbrev = ["SH"];
-  } else if(MINCHAH_KEYS.includes(tefilah.toLowerCase())) {
-    tefilahAbbrev = ["MI","MM"];
-  } else if(MAARIV_KEYS.includes(tefilah.toLowerCase())) {
-    tefilahAbbrev = ["MA"];
-  }
+function fetchMinyanim() {
+  let tefilahAbbrev = ["SH", "MI","MM", "MA"];
   const minyanimList = tefilahAbbrev.flatMap(abbrev => {
     const url = `https://baltimorejewishlife.com/minyanim/shacharis.php?minyanType=${abbrev}`;
     const xml = UrlFetchApp.fetch(url).getContentText();
@@ -128,26 +124,28 @@ function fetchMinyanim(tefilah) {
     const minyanim = minyanElements.map(minyanElement => {
       const minyanElemChildren = minyanElement.getChildren('li');
       const shul = minyanElemChildren[0].getChildText('div').trim();
-      const time = minyanElemChildren[1].getText().trim();
+      const time = getDate(minyanElemChildren[1].getText().trim());
       return [shul, time];
     });
     return minyanim;
-  }).sort(([shulA, timeA], [shulB, timeB]) => timeA.localeCompare(timeB));
+  }).sort(([shulA, timeA], [shulB, timeB]) => timeA - timeB);
   return minyanimList;
 }
 
-function chunkReplies(minyanList) {
+function chunkReplies(minyanList, startTime) {
   let chunkCount = 0;
   let replies = [];
   let replyBuffer = "";
+  minyanList = minyanList.filter(([shul,time]) => time >= startTime);
   for(let [shul, time] of minyanList) {
     const shulShort = SHUL_MAP[shul];
+    const timeShort = time.toLocaleTimeString('en-US', {timeStyle: "short"});
     if(!shulShort) {
       continue;
     }
-    if(chunkCount + shulShort.length + time.length + 1 < 119) {
-      replyBuffer += `${shulShort} ${time}\n`;
-      chunkCount += shulShort.length + time.length + 1;
+    if(chunkCount + shulShort.length + timeShort.length + 1 < 119) {
+      replyBuffer += `${shulShort} ${timeShort}\n`;
+      chunkCount += shulShort.length + timeShort.length + 1;
     } else {
       replies.push(replyBuffer.slice());
       replyBuffer = "";
@@ -158,4 +156,15 @@ function chunkReplies(minyanList) {
     replies.push(replyBuffer.slice());
   }
   return replies;
+}
+
+function getDate(inputTime) {
+  const {hours, minutes, meridiem} = inputTime.match(/(?<hours>\d*):?(?<minutes>\d*)?\s*(?<meridiem>[a-zA-Z]*)?/).groups
+  const PM = meridiem.toLowerCase() === 'pm';
+  const hoursFull = (+hours % 12) + (PM ? 12 : 0);
+  let time = new Date();
+  time.setHours(hoursFull);
+  time.setMinutes(minutes ? minutes : 0);
+  time.setSeconds(0,0);
+  return time;
 }
