@@ -1,7 +1,3 @@
-const SHACHARIS_KEYS = ["s", "sh", "shacharis", "shachris"];
-const MINCHAH_KEYS = ["mi", "min", "mincha", "minchah"];
-const MAARIV_KEYS = ["ma", "mar", "mariv", "maariv", "a", "ar", "arvis"];
-const ALL_KEYS = [SHACHARIS_KEYS, MINCHAH_KEYS, MAARIV_KEYS].flatMap(item => item);
 const SHUL_MAP = {
   'Adath Yeshurun Mogen Abraham': "Adas Yeshurun",
   'Agudah of Greenspring / Adath Yeshurun Mogen Abraham': "Schukatowitz",
@@ -84,7 +80,6 @@ function minyanUpdate() {
     try {
       const msgs = m.getMessages();
       const firstMsg = msgs[0];
-      console.log(firstMsg.getRawContent());
       const firstMsgBody = firstMsg.getPlainBody().trim();
       const inputTime = getDate(firstMsgBody);
 
