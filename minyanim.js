@@ -1,7 +1,7 @@
 const DEFAULT_PAGESIZE = 8
 const SHUL_MAP = {
   'Adath Yeshurun Mogen Abraham': "Adas Yeshurun",
-  'Agudah of Greenspring / Adath Yeshurun Mogen Abraham': "Schukatowitz",
+  'Agudah of Greenspring / Adath Yeshurun Mogen Abraham': "Schuchatowitz",
   'Agudath Israel of Baltimore': "Heinemann",
   'Aish Kodesh (Ranchleigh)': "Aish Kodesh",
   'Arugas HaBosem (Rabbi Taub\'s)': "Taub",
@@ -78,7 +78,7 @@ const SHUL_MAP = {
 function minyanUpdate() {
   const inbox = GmailApp.getInboxThreads();
   inbox.forEach(m => {
-    try {
+    //try {
       const msgs = m.getMessages();
       const firstMsg = msgs[0];
       const firstMsgBody = firstMsg.getPlainBody().trim();
@@ -104,9 +104,9 @@ function minyanUpdate() {
       } else {
         sendMail(firstMsg, `There are no tefilah times today past ${shortTime(time)}`);
       }
-    } finally {
+    //} finally {
       m.moveToTrash();
-    }
+    //}
   });
 }
 
@@ -162,7 +162,7 @@ function getDateAndPagesize(input) {
   try {
     time = new Date()
     const {hours, minutes, meridiem, pagesize} = input.match(/(?<hours>\d*):?(?<minutes>\d*)?\s*(?<meridiem>[a-zA-Z]*)?\s*(?<pagesize>\d*)/).groups
-    _pagesize = pagesize;
+    _pagesize = pagesize ? pagesize : _pagesize;
     const PM = meridiem.toLowerCase() === 'pm';
     const hoursFull = (+hours % 12) + (PM ? 12 : 0);
     time.setHours(hoursFull);
