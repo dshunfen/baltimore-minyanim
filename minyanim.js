@@ -78,7 +78,7 @@ const SHUL_MAP = {
 function minyanUpdate() {
   const inbox = GmailApp.getInboxThreads();
   inbox.forEach(m => {
-    //try {
+    try {
       const msgs = m.getMessages();
       const firstMsg = msgs[0];
       const firstMsgBody = firstMsg.getPlainBody().trim();
@@ -104,9 +104,9 @@ function minyanUpdate() {
       } else {
         sendMail(firstMsg, `There are no tefilah times today past ${shortTime(time)}`);
       }
-    //} finally {
+    } finally {
       m.moveToTrash();
-    //}
+    }
   });
 }
 
