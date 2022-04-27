@@ -77,10 +77,9 @@ const SHUL_MAP = {
 
 
 function minyanUpdate() {
-    const minyanList = getCachedMinyanList();
-    return;
   const inbox = GmailApp.getInboxThreads();
   inbox.forEach(m => {
+    const minyanList = getCachedMinyanList();
     try {
       const msgs = m.getMessages();
       const firstMsg = msgs[0];
