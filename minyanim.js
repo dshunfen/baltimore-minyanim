@@ -1,3 +1,4 @@
+const MINYAN_FILE = "minyanim.json"
 const DEFAULT_PAGESIZE = 7
 const SHUL_MAP = {
   'Adath Yeshurun Mogen Abraham': "Adas Yeshurun",
@@ -76,6 +77,8 @@ const SHUL_MAP = {
 
 
 function minyanUpdate() {
+    const minyanList = getCachedMinyanList();
+    return;
   const inbox = GmailApp.getInboxThreads();
   inbox.forEach(m => {
     try {
@@ -100,7 +103,6 @@ function minyanUpdate() {
       }
 
       if(time && pagesize) {
-        const minyanList = fetchMinyanim();
         const replies = chunkReplies(minyanList, time, pagesize);
 
         if(replies.length) {
@@ -111,6 +113,7 @@ function minyanUpdate() {
       }
     } finally {
       m.moveToTrash();
+      GmailApp.search("in:sent").forEach(m => m.moveToTrash())
     }
   });
 }
@@ -134,6 +137,27 @@ function fetchMinyanim() {
     return minyanim;
   }).sort(([shulA, timeA], [shulB, timeB]) => timeA - timeB);
   return minyanimList;
+}
+
+function getCachedMinyanList() {
+  const a = DriveApp.getFilesByName(MINYAN_FILE);
+  let safeUpdateHour = new Date();
+  safeUpdateHour.setHours(3,0,0,0);
+  let minyanList;
+  while(a.hasNext()) {
+    const minyanFile = a.next();
+    if(minyanFile.getDateCreated() >= safeUpdateHour) {
+      minyanList = JSON.parse(minyanFile.getBlob().getDataAsString())
+        .map(([shul, time]) => [shul, new Date(time)]);
+    } else {
+      minyanFile.setTrashed(true);
+    }
+  }
+  if(!minyanList) {
+    minyanList = fetchMinyanim();
+    DriveApp.createFile(MINYAN_FILE, JSON.stringify(minyanList));
+  }
+  return minyanList;
 }
 
 function chunkReplies(minyanList, startTime, pagesize) {
