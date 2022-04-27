@@ -159,18 +159,18 @@ function chunkReplies(minyanList, startTime, pagesize) {
 function getDateAndPagesize(input) {
   let time;
   let _pagesize = DEFAULT_PAGESIZE;
-  try {
-    time = new Date()
-    const {hours, minutes, meridiem, pagesize} = input.match(/(?<hours>\d*):?(?<minutes>\d*)?\s*(?<meridiem>[a-zA-Z]*)?\s*(?<pagesize>\d*)/).groups
+  const inputMatch = input.match(/(?<hours>\d+):?(?<minutes>\d+)?\s*(?<meridiem>[a-zA-Z]+)?\s*(?<pagesize>\d*)/)
+  if(inputMatch) {
+    const {hours, minutes, meridiem, pagesize} = inputMatch.groups
     _pagesize = pagesize ? pagesize : _pagesize;
     const PM = meridiem === 'pm';
     const hoursFull = (+hours % 12) + (PM ? 12 : 0);
+    time = new Date()
     time.setHours(hoursFull);
     time.setMinutes(minutes ? minutes : 0);
     time.setSeconds(0,0);
-  } finally {
-    return [time, _pagesize];
   }
+  return [time, _pagesize];
 }
 
 function sendMail(msg, body) {
