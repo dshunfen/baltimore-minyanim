@@ -83,16 +83,20 @@ function minyanUpdate() {
     try {
       const msgs = m.getMessages();
       const firstMsg = msgs[0];
-      const firstMsgBody = firstMsg.getPlainBody().toLowerCase().replace("multimedia message", "").trim();
+      const _msgSubject = firstMsg.getSubject().toLowerCase();
+      const msgSubject = _msgSubject.includes("no subject") ? null : _msgSubject;
+      const msgData = firstMsg.getAttachments().map(attachment => attachment.getDataAsString()).join("").toLowerCase();
+      const msgBody = firstMsg.getPlainBody().toLowerCase().replace("multimedia message", "").trim();
+      const input = msgBody || msgSubject || msgData;
 
       let time;
       let pagesize = DEFAULT_PAGESIZE;
-      if(firstMsgBody == "help") {
+      if(input == "help") {
         sendMail(firstMsg, "Supply the start time for minyanim (and optional result size) you'd like.\nExamples: \"now\", \"6am 10\" or \"2PM\"");
-      } else if(firstMsgBody == "now") {
+      } else if(input == "now") {
         time = new Date();
       } else {
-        const [inputTime, inputPagesize] = getDateAndPagesize(firstMsgBody);
+        const [inputTime, inputPagesize] = getDateAndPagesize(input);
         if(inputTime) {
           time = inputTime;
         }
