@@ -82,27 +82,32 @@ function minyanUpdate() {
       const msgs = m.getMessages();
       const firstMsg = msgs[0];
       const firstMsgBody = firstMsg.getPlainBody().toLowerCase().replace("multimedia message", "").trim();
-      const [inputTime, pagesize] = getDateAndPagesize(firstMsgBody);
 
+      let time;
+      let pagesize = DEFAULT_PAGESIZE;
       if(firstMsgBody == "help") {
         sendMail(firstMsg, "Supply the start time for minyanim (and optional result size) you'd like.\nExamples: \"now\", \"6am 10\" or \"2PM\"");
-        m.moveToTrash();
-        return;
-      }
-
-      if(!inputTime) {
-        return;
-      }
-
-      const time = firstMsgBody && firstMsgBody !== "now" ? inputTime : new Date();
-
-      const minyanList = fetchMinyanim();
-      const replies = chunkReplies(minyanList, time, pagesize);
-
-      if(replies.length) {
-        replies.forEach(reply => sendMail(firstMsg, reply));
+      } else if(firstMsgBody == "now") {
+        time = new Date();
       } else {
-        sendMail(firstMsg, `There are no tefilah times today past ${shortTime(time)}`);
+        const [inputTime, inputPagesize] = getDateAndPagesize(firstMsgBody);
+        if(inputTime) {
+          time = inputTime;
+        }
+        if(inputPagesize) {
+          pagesize = inputPagesize;
+        }
+      }
+
+      if(time && pagesize) {
+        const minyanList = fetchMinyanim();
+        const replies = chunkReplies(minyanList, time, pagesize);
+
+        if(replies.length) {
+          replies.forEach(reply => sendMail(firstMsg, reply));
+        } else {
+          sendMail(firstMsg, `There are no tefilah times today past ${shortTime(time)}`);
+        }
       }
     } finally {
       m.moveToTrash();
@@ -158,11 +163,11 @@ function chunkReplies(minyanList, startTime, pagesize) {
 
 function getDateAndPagesize(input) {
   let time;
-  let _pagesize = DEFAULT_PAGESIZE;
+  let _pagesize;
   const inputMatch = input.match(/(?<hours>\d+):?(?<minutes>\d+)?\s*(?<meridiem>[a-zA-Z]+)?\s*(?<pagesize>\d*)/)
   if(inputMatch) {
-    const {hours, minutes, meridiem, pagesize} = inputMatch.groups
-    _pagesize = pagesize ? pagesize : _pagesize;
+    const {hours, minutes, meridiem, pagesize} = inputMatch.groups;
+    _pagesize = pagesize;
     const PM = meridiem === 'pm';
     const hoursFull = (+hours % 12) + (PM ? 12 : 0);
     time = new Date()
