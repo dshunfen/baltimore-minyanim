@@ -1,4 +1,4 @@
-const MINYAN_FILE = "minyanim.json"
+const MINYAN_FILE_PREFIX = "minyanim"
 const DEFAULT_PAGESIZE = 7
 const SHUL_MAP = {
   'Adath Yeshurun Mogen Abraham': "Adas Yeshurun",
@@ -78,8 +78,8 @@ const SHUL_MAP = {
 
 function minyanUpdate() {
   const inbox = GmailApp.getInboxThreads();
+  const [todayMinyanList, tomorrowMinyanList] = [getCachedMinyanList('today'), getCachedMinyanList('tomorrow')];
   inbox.forEach(m => {
-    const minyanList = getCachedMinyanList();
     try {
       const msgs = m.getMessages();
       const firstMsg = msgs[0];
@@ -91,12 +91,22 @@ function minyanUpdate() {
 
       let time;
       let pagesize = DEFAULT_PAGESIZE;
+      let minyanList = todayMinyanList;
+      let day = "today";
       if(input == "help") {
-        sendMail(firstMsg, "Supply the start time for minyanim (and optional result size) you'd like.\nExamples: \"now\", \"6am 10\" or \"2PM\"");
+        sendMail(firstMsg, "Supply the start time for minyanim (and optional result size) you'd like.\nExamples: \"now\", \"tomorrow\", \"6am 10\", \"2:45 PM\" or \"315pm\"");
       } else if(input == "now") {
         time = new Date();
       } else {
-        const [inputTime, inputPagesize] = getDateAndPagesize(input);
+        if(input.startsWith("tomorrow")) {
+          let _time = new Date();
+          _time.setDate(_time.getDate() + 1);
+          time = _time;
+          input.replace(/tomorrow\s+/, "");
+          day = "tomorrow";
+          minyanList = tomorrowMinyanList;
+        }
+        const [inputTime, inputPagesize] = getDateAndPagesize(input, day);
         if(inputTime) {
           time = inputTime;
         }
@@ -111,7 +121,7 @@ function minyanUpdate() {
         if(replies.length) {
           replies.forEach(reply => sendMail(firstMsg, reply));
         } else {
-          sendMail(firstMsg, `There are no tefilah times today past ${shortTime(time)}`);
+          sendMail(firstMsg, `There are no tefilah times ${day} past ${shortTime(time)}`);
         }
       }
     } finally {
@@ -121,10 +131,14 @@ function minyanUpdate() {
   });
 }
 
-function fetchMinyanim() {
+function fetchMinyanim(day) {
   let tefilahAbbrev = ["SH", "MI","MM", "MA"];
+  let extraArgs = "";
+  if(day === 'tomorrow') {
+    extraArgs = "&direction=next";
+  }
   const minyanimList = tefilahAbbrev.flatMap(abbrev => {
-    const url = `https://baltimorejewishlife.com/minyanim/shacharis.php?minyanType=${abbrev}`;
+    const url = `https://baltimorejewishlife.com/minyanim/shacharis.php?minyanType=${abbrev}${extraArgs}`;
     const xml = UrlFetchApp.fetch(url).getContentText();
     const body = xml.match(/(?<minyandiv><div id="listing-container">[\s\S]*?)<div id="ad">/);
     const document = XmlService.parse(body.groups.minyandiv);
@@ -134,7 +148,7 @@ function fetchMinyanim() {
     const minyanim = minyanElements.map(minyanElement => {
       const minyanElemChildren = minyanElement.getChildren('li');
       const shul = minyanElemChildren[0].getChildText('div').trim();
-      const [time, _] = getDateAndPagesize(minyanElemChildren[1].getText().trim());
+      const [time, _] = getDateAndPagesize(minyanElemChildren[1].getText().trim(), day);
       return [shul, time];
     });
     return minyanim;
@@ -142,13 +156,18 @@ function fetchMinyanim() {
   return minyanimList;
 }
 
-function getCachedMinyanList() {
-  const a = DriveApp.getFilesByName(MINYAN_FILE);
+function getCachedMinyanList(day) {
+  const minyanFileName = `${MINYAN_FILE_PREFIX}-${day}.json`;
+  const minyanFiles = DriveApp.getFilesByName(minyanFileName);
   let safeUpdateHour = new Date();
   safeUpdateHour.setHours(3,0,0,0);
+  if(day === "tomorrow") {
+    safeUpdateHour.setDate(safeUpdateHour.getDate() + 1);
+  }
+
   let minyanList;
-  while(a.hasNext()) {
-    const minyanFile = a.next();
+  while(minyanFiles.hasNext()) {
+    const minyanFile = minyanFiles.next();
     if(minyanFile.getDateCreated() >= safeUpdateHour) {
       minyanList = JSON.parse(minyanFile.getBlob().getDataAsString())
         .map(([shul, time]) => [shul, new Date(time)]);
@@ -157,8 +176,8 @@ function getCachedMinyanList() {
     }
   }
   if(!minyanList) {
-    minyanList = fetchMinyanim();
-    DriveApp.createFile(MINYAN_FILE, JSON.stringify(minyanList));
+    minyanList = fetchMinyanim(day);
+    DriveApp.createFile(minyanFileName, JSON.stringify(minyanList));
   }
   return minyanList;
 }
@@ -188,19 +207,20 @@ function chunkReplies(minyanList, startTime, pagesize) {
   return replies;
 }
 
-function getDateAndPagesize(input) {
+function getDateAndPagesize(input, day) {
   let time;
   let _pagesize;
-  const inputMatch = input.match(/(?<hours>\d+):?(?<minutes>\d+)?\s*(?<meridiem>[a-zA-Z]+)?\s*(?<pagesize>\d*)/)
+  const inputMatch = input.match(/(?<hours>0?[1-9]|1[0-2]):?(?<minutes>[0-5]\d)\s?(?<meridiem>am|pm)\s*(?<pagesize>\d*)/)
   if(inputMatch) {
     const {hours, minutes, meridiem, pagesize} = inputMatch.groups;
     _pagesize = pagesize;
     const PM = meridiem === 'pm';
     const hoursFull = (+hours % 12) + (PM ? 12 : 0);
     time = new Date()
-    time.setHours(hoursFull);
-    time.setMinutes(minutes ? minutes : 0);
-    time.setSeconds(0,0);
+    time.setHours(hoursFull, minutes ? minutes : 0, 0, 0);
+    if (day === "tomorrow") {
+      time.setDate(time.getDate() + 1);
+    }
   }
   return [time, _pagesize];
 }
