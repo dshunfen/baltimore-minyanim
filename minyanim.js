@@ -96,20 +96,19 @@ function minyanUpdate() {
       let pagesize = DEFAULT_PAGESIZE;
       let minyanList = todayMinyanList;
       let day = "today";
-      if(input == "help") {
+      if(input === "help") {
         sendMail(firstMsg, "Supply the start time for minyanim (and optional result size) you'd like.\nExamples: \"now\", \"tomorrow\", \"6am 10\", \"2:45 PM\" or \"315pm\"");
-      } else if(input == "now") {
+      } else if(input === "now") {
         time = new Date();
       } else {
-        if(input.startsWith("tomorrow")) {
+        const [_day, inputTime, inputPagesize] = parseInput(input, day);
+        if(_day === "tomorrow") {
           let _time = new Date();
           _time.setDate(_time.getDate() + 1);
           time = _time;
-          input.replace(/tomorrow\s+/, "");
-          day = "tomorrow";
+          day = _day;
           minyanList = tomorrowMinyanList;
         }
-        const [inputTime, inputPagesize] = getDateAndPagesize(input, day);
         if(inputTime) {
           time = inputTime;
         }
@@ -151,7 +150,7 @@ function fetchMinyanim(day) {
     const minyanim = minyanElements.map(minyanElement => {
       const minyanElemChildren = minyanElement.getChildren('li');
       const shul = minyanElemChildren[0].getChildText('div').trim();
-      const [time, _] = getDateAndPagesize(minyanElemChildren[1].getText().trim(), day);
+      const [_, time, __] = parseInput(minyanElemChildren[1].getText().trim(), day);
       return [shul, time];
     });
     return minyanim;
@@ -207,12 +206,13 @@ function chunkReplies(minyanList, startTime, pagesize) {
   return replies;
 }
 
-function getDateAndPagesize(input, day) {
+function parseInput(input) {
   let time;
+  let _day;
   let _pagesize;
-  const inputMatch = input.match(/(?<hours>0?[1-9]|1[0-2]):?(?<minutes>[0-5]\d)\s?(?<meridiem>am|pm)\s*(?<pagesize>\d*)/)
+  const inputMatch = input.match(/(?<day>tomorrow)?\s*(?<hours>0?[1-9]|1[0-2]):?(?<minutes>[0-5]\d)?\s?(?<meridiem>am|pm)\s*(?<pagesize>\d*)/)
   if(inputMatch) {
-    const {hours, minutes, meridiem, pagesize} = inputMatch.groups;
+    const {day, hours, minutes, meridiem, pagesize} = inputMatch.groups;
     _pagesize = pagesize;
     const PM = meridiem === 'pm';
     const hoursFull = (+hours % 12) + (PM ? 12 : 0);
@@ -222,7 +222,7 @@ function getDateAndPagesize(input, day) {
       time.setDate(time.getDate() + 1);
     }
   }
-  return [time, _pagesize];
+  return [_day, time, _pagesize];
 }
 
 function sendMail(msg, body) {
