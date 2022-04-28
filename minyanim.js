@@ -101,7 +101,7 @@ function minyanUpdate() {
       } else if(input === "now") {
         time = new Date();
       } else {
-        const [_day, inputTime, inputPagesize] = parseInput(input, day);
+        const [_day, inputTime, inputPagesize] = parseDateTime(input, day);
         if(_day === "tomorrow") {
           let _time = new Date();
           _time.setDate(_time.getDate() + 1);
@@ -150,7 +150,7 @@ function fetchMinyanim(day) {
     const minyanim = minyanElements.map(minyanElement => {
       const minyanElemChildren = minyanElement.getChildren('li');
       const shul = minyanElemChildren[0].getChildText('div').trim();
-      const [_, time, __] = parseInput(minyanElemChildren[1].getText().trim(), day);
+      const [_, time, __] = parseDateTime(minyanElemChildren[1].getText().trim(), day);
       return [shul, time];
     });
     return minyanim;
@@ -206,9 +206,9 @@ function chunkReplies(minyanList, startTime, pagesize) {
   return replies;
 }
 
-function parseInput(input) {
+function parseDateTime(input) {
   let time;
-  let _day;
+  let _day = "today";
   let _pagesize;
   const inputMatch = input.match(/(?<day>tomorrow)?\s*(?<hours>0?[1-9]|1[0-2]):?(?<minutes>[0-5]\d)?\s?(?<meridiem>am|pm)\s*(?<pagesize>\d*)/)
   if(inputMatch) {
@@ -220,6 +220,7 @@ function parseInput(input) {
     time.setHours(hoursFull, minutes ? minutes : 0, 0, 0);
     if (day === "tomorrow") {
       time.setDate(time.getDate() + 1);
+      _day = day;
     }
   }
   return [_day, time, _pagesize];
