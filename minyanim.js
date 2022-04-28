@@ -78,6 +78,9 @@ const SHUL_MAP = {
 
 function minyanUpdate() {
   const inbox = GmailApp.getInboxThreads();
+  if(inbox.length === 0) {
+    return;
+  }
   const [todayMinyanList, tomorrowMinyanList] = [getCachedMinyanList('today'), getCachedMinyanList('tomorrow')];
   inbox.forEach(m => {
     try {
@@ -161,9 +164,6 @@ function getCachedMinyanList(day) {
   const minyanFiles = DriveApp.getFilesByName(minyanFileName);
   let safeUpdateHour = new Date();
   safeUpdateHour.setHours(3,0,0,0);
-  if(day === "tomorrow") {
-    safeUpdateHour.setDate(safeUpdateHour.getDate() + 1);
-  }
 
   let minyanList;
   while(minyanFiles.hasNext()) {
