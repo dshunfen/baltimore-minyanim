@@ -97,7 +97,7 @@ function minyanUpdate() {
       let minyanList = todayMinyanList;
       let day = "today";
       if(input === "help") {
-        sendMail(firstMsg, "Supply the start time for minyanim (and optional result size) you'd like.\nExamples: \"now\", \"tomorrow\", \"6am 10\", \"2:45 PM\" or \"315pm\"");
+        sendMail(firstMsg, "Supply the start time for minyanim (and optional result size) you'd like.\nExamples: \"now\", \"tomorrow\", \"6am 10\", \"tomorrow 6pm\" \"2:45 PM\" or \"315pm\"");
       } else if(input === "now") {
         time = new Date();
       } else {
