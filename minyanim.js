@@ -81,7 +81,7 @@ function minyanUpdate() {
   if(inbox.length === 0) {
     return;
   }
-  const [todayMinyanList, tomorrowMinyanList] = [getCachedMinyanList('today'), getCachedMinyanList('tomorrow')];
+  const [todayMinyanList, tomorrowMinyanList] = [getMinyanim('today'), getMinyanim('tomorrow')];
   inbox.forEach(m => {
     try {
       const msgs = m.getMessages();
@@ -118,7 +118,7 @@ function minyanUpdate() {
       }
 
       if(time && pagesize) {
-        const replies = chunkReplies(minyanList, time, pagesize);
+        const replies = filterAndChunkReplies(minyanList, time, pagesize);
 
         if(replies.length) {
           replies.forEach(reply => sendMail(firstMsg, reply));
@@ -133,7 +133,7 @@ function minyanUpdate() {
   });
 }
 
-function fetchMinyanim(day) {
+function fetchBJLMinyanim(day) {
   let tefilahAbbrev = ["SH", "MI","MM", "MA"];
   let extraArgs = "";
   if(day === 'tomorrow') {
@@ -158,7 +158,7 @@ function fetchMinyanim(day) {
   return minyanimList;
 }
 
-function getCachedMinyanList(day) {
+function getMinyanim(day) {
   const minyanFileName = `${MINYAN_FILE_PREFIX}-${day}.json`;
   const minyanFiles = DriveApp.getFilesByName(minyanFileName);
   let safeUpdateHour = new Date();
@@ -175,13 +175,18 @@ function getCachedMinyanList(day) {
     }
   }
   if(!minyanList) {
-    minyanList = fetchMinyanim(day);
+    minyanList = fetchBJLMinyanim(day);
+    if (day === "tomorrow") {
+      minyanList.map(([shul, time]) => {
+        time.setDate(time.getDate() + 1);
+        return [shul, time];})
+    }
     DriveApp.createFile(minyanFileName, JSON.stringify(minyanList));
   }
   return minyanList;
 }
 
-function chunkReplies(minyanList, startTime, pagesize) {
+function filterAndChunkReplies(minyanList, startTime, pagesize) {
   let chunkCount = 0;
   let replies = [];
   let replyBuffer = "";
