@@ -1,4 +1,5 @@
 const MINYAN_FILE_PREFIX = "minyanim"
+const ZMANIM_FILE_PREFIX = "zmanim"
 const DEFAULT_PAGESIZE = 7
 const SHUL_MAP = {
   'Adath Yeshurun Mogen Abraham': "Adas Yeshurun",
@@ -76,12 +77,13 @@ const SHUL_MAP = {
   }
 
 
-function minyanUpdate() {
+function minyanZmanUpdate() {
   const inbox = GmailApp.getInboxThreads();
   if(inbox.length === 0) {
     return;
   }
   const [todayMinyanList, tomorrowMinyanList] = [getMinyanim('today'), getMinyanim('tomorrow')];
+  const [todayZmanimList, tomorrowZmanimList] = [getZmanim('today'), getZmanim('tomorrow')]
   inbox.forEach(m => {
     try {
       const msgs = m.getMessages();
@@ -89,17 +91,32 @@ function minyanUpdate() {
       const _msgSubject = firstMsg.getSubject().toLowerCase();
       const msgSubject = _msgSubject.includes("no subject") ? null : _msgSubject;
       const msgData = firstMsg.getAttachments().map(attachment => attachment.getDataAsString()).join("").toLowerCase();
-      const msgBody = firstMsg.getPlainBody().toLowerCase().replace("multimedia message", "").trim();
+      const msgBodyRaw = firstMsg.getPlainBody().toLowerCase().trim();
+      const msgBody = msgBodyRaw.includes("multimedia messag") ? "" : msgBodyRaw;
       const input = msgBody || msgSubject || msgData;
+      const isZmanRequest = input.startsWith("zman")
 
       let time;
       let pagesize = DEFAULT_PAGESIZE;
-      let minyanList = todayMinyanList;
+      let returnList = todayMinyanList;
       let day = "today";
       if(input === "help") {
-        sendMail(firstMsg, "Supply a start time for minyanim (and optional result size).\nExamples: \"now\", \"tomorrow 6pm\", \"6am 10\", \"2:45 PM\", \"315pm\"");
+        sendMail(firstMsg, "Supply a start time for minyanim (and optional result size).\nExamples: \"now\", \"tomorrow 6pm\", \"6am 10\", \"2:45 PM\", \"315pm\". Or, send \"zman/zmanim\" and \"today/tomorrow\"");
       } else if(input === "now") {
         time = new Date();
+      } else if(isZmanRequest) {
+        returnList = todayZmanimList
+        pagesize = 20
+        time = new Date()
+        const inputMatch = input.match(/(?<zmanim>zman|zmanim)\s(?<day>today|tomorrow)?/)
+        if(inputMatch) {
+          const {zmanim, day} = inputMatch.groups;
+          if(day === "tomorrow") {
+            returnList = tomorrowZmanimList
+            time.setDate(time.getDate() + 1)
+          }
+        }
+        time.setHours(0, 0, 0, 0)
       } else {
         const [_day, inputTime, inputPagesize] = parseDateTime(input, day);
         if(_day === "tomorrow") {
@@ -107,7 +124,7 @@ function minyanUpdate() {
           _time.setDate(_time.getDate() + 1);
           time = _time;
           day = _day;
-          minyanList = tomorrowMinyanList;
+          returnList = tomorrowMinyanList;
         }
         if(inputTime) {
           time = inputTime;
@@ -118,7 +135,7 @@ function minyanUpdate() {
       }
 
       if(time && pagesize) {
-        const replies = filterAndChunkReplies(minyanList, time, pagesize);
+        const replies = filterAndChunkReplies(returnList, time, pagesize, !isZmanRequest);
 
         if(replies.length) {
           replies.forEach(reply => sendMail(firstMsg, reply));
@@ -186,19 +203,80 @@ function getMinyanim(day) {
   return minyanList;
 }
 
-function filterAndChunkReplies(minyanList, startTime, pagesize) {
+function getZmanim(day) {
+  const zmanimFileName = `${ZMANIM_FILE_PREFIX}-${day}.json`;
+  const zmanimFiles = DriveApp.getFilesByName(zmanimFileName);
+  let safeUpdateHour = new Date();
+  safeUpdateHour.setHours(3,0,0,0);
+
+  let zmanimList;
+  while(zmanimFiles.hasNext()) {
+    const minyanFile = zmanimFiles.next();
+    if(minyanFile.getDateCreated() >= safeUpdateHour) {
+      zmanimList = JSON.parse(minyanFile.getBlob().getDataAsString())
+        .map(([name, time]) => [name, new Date(time)]);
+    } else {
+      minyanFile.setTrashed(true);
+    }
+  }
+  if(!zmanimList) {
+    zmanimList = fetchHebcalZmanim(day);
+    if (day === "tomorrow") {
+      zmanimList.map(([name, time]) => {
+        time.setDate(time.getDate() + 1);
+        return [name, time];})
+    }
+    DriveApp.createFile(zmanimFileName, JSON.stringify(zmanimList));
+  }
+  return zmanimList;
+}
+
+function fetchHebcalZmanim(day) {
+  const dt = new Date()
+  dt.setHours(0, 0, 0, 0)
+  if(day === "tomorrow") {
+    dt.setDate(dt.getDate() + 1)
+  }
+  const dateString = dt.toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+  const url = `https://www.hebcal.com/zmanim?cfg=json&zip=21209&date=${dateString}`
+  const res = UrlFetchApp.fetch(url).getContentText();
+  const json = JSON.parse(res).times
+  const times = Object.fromEntries(Object.entries(json).map(([key, datetime]) => [key,new Date(datetime)]));
+  const zmanim = [
+    ["Chatzos", times.chatzotNight],
+    ["Alos", times.alotHaShachar],
+    ["Yakir", times.misheyakir],
+    ["Netz", times.sunrise],
+    ["Shema", `${times.sofZmanShma}/${times.sofZmanShmaMGA}`],
+    ["Tefilla", `${times.sofZmanTfillaMGA}/${times.sofZmanTfilla}`],
+    ["Chatzos", times.chatzot],
+    ["Mincha", times.minchaGedola],
+    ["Shkia", times.sunset],
+    ["Tzeis", times.tzeit85deg],
+    ["Leil72", times.tzeit72min],
+  ].map(([name, time]) => ([name, new Date(time)]))
+  return zmanim
+}
+
+function filterAndChunkReplies(sourceList, startTime, pagesize, useShulMap=true) {
   let chunkCount = 0;
   let replies = [];
   let replyBuffer = "";
-  minyanList = minyanList
+  const timesList = sourceList
     .filter(([_, time]) => time >= startTime)
-    .map(([shul, time]) => [SHUL_MAP[shul], shortTime(time)])
-    .filter(([shul, _]) => shul)
+    .map(([key, time]) => {
+      const t = shortTime(time)
+      if(useShulMap) {
+        return [SHUL_MAP[key], t]
+      }
+      return [key, t]
+    })
+    .filter(([key, _]) => key)
     .slice(0, pagesize);
-  for(let [shul, time] of minyanList) {
-    replyBuffer += `${shul} ${time}\n`;
-    if(chunkCount + shul.length + time.length + 2 < 119) {
-      chunkCount += shul.length + time.length + 2;
+  for(let [key, time] of timesList) {
+    replyBuffer += `${key} ${time}\n`;
+    if(chunkCount + key.length + time.length + 2 < 119) {
+      chunkCount += key.length + time.length + 2;
     } else {
       replies.push(replyBuffer.slice());
       replyBuffer = "";
@@ -217,7 +295,7 @@ function parseDateTime(input) {
   let _pagesize;
   const inputMatch = input.match(/(?<day>tomorrow)?\s*(?<hours>0?[1-9]|1[0-2]):?(?<minutes>[0-5]\d)?\s?(?<meridiem>am|pm)\s*(?<pagesize>\d*)/)
   if(inputMatch) {
-    const {day, hours, minutes, meridiem, pagesize} = inputMatch.groups;
+    const {zmanim, day, hours, minutes, meridiem, pagesize} = inputMatch.groups;
     _pagesize = pagesize;
     const PM = meridiem === 'pm';
     const hoursFull = (+hours % 12) + (PM ? 12 : 0);
