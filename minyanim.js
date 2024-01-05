@@ -295,7 +295,7 @@ function parseDateTime(input) {
   let _pagesize;
   const inputMatch = input.match(/(?<day>tomorrow)?\s*(?<hours>0?[1-9]|1[0-2]):?(?<minutes>[0-5]\d)?\s?(?<meridiem>am|pm)\s*(?<pagesize>\d*)/)
   if(inputMatch) {
-    const {zmanim, day, hours, minutes, meridiem, pagesize} = inputMatch.groups;
+    const {day, hours, minutes, meridiem, pagesize} = inputMatch.groups;
     _pagesize = pagesize;
     const PM = meridiem === 'pm';
     const hoursFull = (+hours % 12) + (PM ? 12 : 0);
