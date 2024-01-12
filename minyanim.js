@@ -1,6 +1,9 @@
 const MINYAN_FILE_PREFIX = "minyanim"
 const ZMANIM_FILE_PREFIX = "zmanim"
 const DEFAULT_PAGESIZE = 7
+const TEXT_GATEWAY_EMAIL_MAP = {
+  'mypixmessages.com': 'vtext.com'
+}
 const SHUL_MAP = {
   'Adath Yeshurun Mogen Abraham': "Adas Yeshurun",
   'Agudah of Greenspring / Adath Yeshurun Mogen Abraham': "Schuchatowitz",
@@ -83,7 +86,7 @@ function minyanZmanUpdate() {
     return;
   }
   const [todayMinyanList, tomorrowMinyanList] = [getMinyanim('today'), getMinyanim('tomorrow')];
-  const [todayZmanimList, tomorrowZmanimList] = [getZmanim('today'), getZmanim('tomorrow')]
+  const [todayZmanimList, tomorrowZmanimList] = [getZmanim('today', 21209), getZmanim('tomorrow', 21209)]
   inbox.forEach(m => {
     try {
       const msgs = m.getMessages();
@@ -101,19 +104,28 @@ function minyanZmanUpdate() {
       let returnList = todayMinyanList;
       let day = "today";
       if(input === "help") {
-        sendMail(firstMsg, "Supply a start time for minyanim (and optional result size).\nExamples: \"now\", \"tomorrow 6pm\", \"6am 10\", \"2:45 PM\", \"315pm\". Or, send \"zman/zmanim\" and \"today/tomorrow\"");
+        sendMail(firstMsg, "Supply a start time for minyanim (and optional result size).\nExamples: \"now\", \"tomorrow 6pm\", \"6am 10\", \"2:45 PM\", \"315pm\"");
+        sendMail(firstMsg, "Or, send \"zman/zmanim\" and \"today/tomorrow\" (optional) and \"21209\" (optional)");
       } else if(input === "now") {
         time = new Date();
       } else if(isZmanRequest) {
         returnList = todayZmanimList
         pagesize = 20
         time = new Date()
-        const inputMatch = input.match(/(?<zmanim>zman|zmanim)\s(?<day>today|tomorrow)?/)
+        const inputMatch = input.match(/(?<zmanim>zman|zmanim)\s(?<day>today|tomorrow)?\s(?<zipcode>\d{5})?/);
         if(inputMatch) {
-          const {zmanim, day} = inputMatch.groups;
+          const {zmanim, day, zipcode} = inputMatch.groups;
           if(day === "tomorrow") {
             returnList = tomorrowZmanimList
             time.setDate(time.getDate() + 1)
+          }
+          if(zipcode && zipcode !== "21209") {
+            const [todaySpecificZmanimList, tomorrowSpecificZmanimList] = [getZmanim('today', zipcode), getZmanim('tomorrow', zipcode)];
+            returnList = todaySpecificZmanimList
+            if(day === "tomorrow") {
+              returnList = tomorrowSpecificZmanimList
+              time.setDate(time.getDate() + 1)
+            }
           }
         }
         time.setHours(0, 0, 0, 0)
@@ -203,8 +215,8 @@ function getMinyanim(day) {
   return minyanList;
 }
 
-function getZmanim(day) {
-  const zmanimFileName = `${ZMANIM_FILE_PREFIX}-${day}.json`;
+function getZmanim(day, zipCode) {
+  const zmanimFileName = `${ZMANIM_FILE_PREFIX}-${zipCode}-${day}.json`;
   const zmanimFiles = DriveApp.getFilesByName(zmanimFileName);
   let safeUpdateHour = new Date();
   safeUpdateHour.setHours(3,0,0,0);
@@ -220,7 +232,7 @@ function getZmanim(day) {
     }
   }
   if(!zmanimList) {
-    zmanimList = fetchHebcalZmanim(day);
+    zmanimList = fetchHebcalZmanim(day, zipCode);
     if (day === "tomorrow") {
       zmanimList.map(([name, time]) => {
         time.setDate(time.getDate() + 1);
@@ -231,14 +243,14 @@ function getZmanim(day) {
   return zmanimList;
 }
 
-function fetchHebcalZmanim(day) {
+function fetchHebcalZmanim(day, zipString) {
   const dt = new Date()
   dt.setHours(0, 0, 0, 0)
   if(day === "tomorrow") {
     dt.setDate(dt.getDate() + 1)
   }
   const dateString = dt.toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
-  const url = `https://www.hebcal.com/zmanim?cfg=json&zip=21209&date=${dateString}`
+  const url = `https://www.hebcal.com/zmanim?cfg=json&zip=${zipString}&date=${dateString}`
   const res = UrlFetchApp.fetch(url).getContentText();
   const json = JSON.parse(res).times
   const times = Object.fromEntries(Object.entries(json).map(([key, datetime]) => [key,new Date(datetime)]));
@@ -247,8 +259,10 @@ function fetchHebcalZmanim(day) {
     ["Alos", times.alotHaShachar],
     ["Yakir", times.misheyakir],
     ["Netz", times.sunrise],
-    ["Shema", `${times.sofZmanShma}/${times.sofZmanShmaMGA}`],
-    ["Tefilla", `${times.sofZmanTfillaMGA}/${times.sofZmanTfilla}`],
+    ["Shema M\"A", times.sofZmanShmaMGA],
+    ["Shema", times.sofZmanShma],
+    ["Tefilla M\"A", times.sofZmanTfillaMGA],
+    ["Tefilla", times.sofZmanTfilla],
     ["Chatzos", times.chatzot],
     ["Mincha", times.minchaGedola],
     ["Shkia", times.sunset],
@@ -310,7 +324,14 @@ function parseDateTime(input) {
 }
 
 function sendMail(msg, body) {
-  GmailApp.sendEmail(msg.getFrom(), null, body);
+  const recipient = getNewRecipientAddress(msg.getFrom())
+  GmailApp.sendEmail(recipient, null, body)
+}
+
+function getNewRecipientAddress(email) {
+  const [localPart, domain] = email.split('@');
+  const newDomain = TEXT_GATEWAY_EMAIL_MAP[domain];
+  return newDomain ? `${localPart}@${newDomain}` : email;
 }
 
 function shortTime(date) {
