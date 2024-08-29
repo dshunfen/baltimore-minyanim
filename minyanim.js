@@ -27,6 +27,7 @@ const SHUL_MAP = {
   'Community Kollel Tiferes Moshe Aryeh': "Comm. Kollel",
   'Darchei Tzedek': "Darchei",
   'DC Dental Mincha Minyan --1133 Greenwood Road 21208': "DC Dental",
+  'Derech Chaim': 'Gross',
   'Etz Chaim Ford Lane': "Etz Chaim PV",
   'Etz Chaim of Owings Mills': "Etz Chaim OM",
   'Ezras Israel': "Ezras",
@@ -39,6 +40,7 @@ const SHUL_MAP = {
   'KD Gold& Coin Exchange': "Kaylah",
   'Kedushas Yisrael': "Kedushas",
   'Kehillas Meor HaTorah': "Meor",
+  'Kehilath B\'nai Torah': "Meister",
   'Khal Ahavas Yisroel/ Tzemach Tzedek': "Tzemach",
   'Khal Bais Nosson 2901 Taney (corner Taney & Baywood)': "Bais Nosson",
   'Knish Shop': "Knish",
@@ -77,7 +79,7 @@ const SHUL_MAP = {
   'Tov Pizza Mincha Minyan': "Tov Pizza",
   'Yeshiva Gedola of Greater Washington': "YGW",
   'Yeshiva Tiferes Hatorah': "Tiferes Hatorah"
-  }
+}
 
 
 function minyanZmanUpdate() {
@@ -100,6 +102,7 @@ function minyanZmanUpdate() {
       const isZmanRequest = input.startsWith("zman")
 
       let time;
+      let hebDate;
       let pagesize = DEFAULT_PAGESIZE;
       let returnList = todayMinyanList;
       let day = "today";
@@ -112,6 +115,7 @@ function minyanZmanUpdate() {
         returnList = todayZmanimList
         pagesize = 20
         time = new Date()
+        hebDate = fetchHebcalDate(day)
         const inputMatch = input.match(/(?<zmanim>zman|zmanim)\s(?<day>today|tomorrow)?\s(?<zipcode>\d{5})?/);
         if(inputMatch) {
           const {zmanim, day, zipcode} = inputMatch.groups;
@@ -147,7 +151,7 @@ function minyanZmanUpdate() {
       }
 
       if(time && pagesize) {
-        const replies = filterAndChunkReplies(returnList, time, pagesize, !isZmanRequest);
+        const replies = filterAndChunkReplies(returnList, time, pagesize, !isZmanRequest, hebDate);
 
         if(replies.length) {
           replies.forEach(reply => sendMail(firstMsg, reply));
@@ -272,10 +276,27 @@ function fetchHebcalZmanim(day, zipString) {
   return zmanim
 }
 
-function filterAndChunkReplies(sourceList, startTime, pagesize, useShulMap=true) {
+function fetchHebcalDate(day) {
+  const dt = new Date()
+  dt.setHours(0, 0, 0, 0)
+  if(day === "tomorrow") {
+    dt.setDate(dt.getDate() + 1)
+  }
+  const dateString = dt.toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+  const url = `https://www.hebcal.com/converter?cfg=json&date=${dateString}&g2h=1&strict=1`
+  const res = UrlFetchApp.fetch(url).getContentText();
+  const json = JSON.parse(res)
+  const hebDate = `${json.hd} ${json.hm}, ${json.hy}`
+  return hebDate
+}
+
+function filterAndChunkReplies(sourceList, startTime, pagesize, useShulMap=true, prefix="") {
   let chunkCount = 0;
   let replies = [];
   let replyBuffer = "";
+  if (prefix) {
+    replyBuffer += `${prefix}\n`
+  }
   const timesList = sourceList
     .filter(([_, time]) => time >= startTime)
     .map(([key, time]) => {
