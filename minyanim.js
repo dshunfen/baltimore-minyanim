@@ -218,35 +218,17 @@ function dryRun(input = "now") {
   }
 }
 
-function fetchBJLMinyanim(day) {
-  let tefilahAbbrev = ["SH", "MI","MM", "MA"];
-  let extraArgs = "";
-  if(day === 'tomorrow') {
-    extraArgs = "&direction=next";
-  }
-  const minyanimList = tefilahAbbrev.flatMap(abbrev => {
-    const url = `https://baltimorejewishlife.com/minyanim/shacharis.php?minyanType=${abbrev}${extraArgs}`;
-    const xml = UrlFetchApp.fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9'
-      }
-    }).getContentText();
-    const body = xml.match(/(?<minyandiv><div id="listing-container">[\s\S]*?)<div id="ad">/);
-    const document = XmlService.parse(body.groups.minyandiv);
-    const root = document.getRootElement();
+const MINYAN_CACHE_URL_PREFIX = "https://raw.githubusercontent.com/dshunfen/baltimore-minyanim/main/cache";
 
-    const minyanElements = root.getChildren('ul');
-    const minyanim = minyanElements.map(minyanElement => {
-      const minyanElemChildren = minyanElement.getChildren('li');
-      const shul = minyanElemChildren[0].getChildText('div').trim();
-      const [_, time, __] = parseDateTime(minyanElemChildren[1].getText().trim(), day);
+function fetchBJLMinyanim(day) {
+  const url = `${MINYAN_CACHE_URL_PREFIX}/${day}.json`;
+  const res = UrlFetchApp.fetch(url).getContentText();
+  return JSON.parse(res)
+    .map(([shul, timeStr]) => {
+      const [, time] = parseDateTime(timeStr.toLowerCase());
       return [shul, time];
-    });
-    return minyanim;
-  }).sort(([shulA, timeA], [shulB, timeB]) => timeA - timeB);
-  return minyanimList;
+    })
+    .filter(([_, time]) => time);
 }
 
 function getMinyanim(day) {
