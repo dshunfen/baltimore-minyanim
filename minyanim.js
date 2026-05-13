@@ -226,7 +226,13 @@ function fetchBJLMinyanim(day) {
   }
   const minyanimList = tefilahAbbrev.flatMap(abbrev => {
     const url = `https://baltimorejewishlife.com/minyanim/shacharis.php?minyanType=${abbrev}${extraArgs}`;
-    const xml = UrlFetchApp.fetch(url).getContentText();
+    const xml = UrlFetchApp.fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9'
+      }
+    }).getContentText();
     const body = xml.match(/(?<minyandiv><div id="listing-container">[\s\S]*?)<div id="ad">/);
     const document = XmlService.parse(body.groups.minyandiv);
     const root = document.getRootElement();
