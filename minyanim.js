@@ -166,6 +166,58 @@ function minyanZmanUpdate() {
   });
 }
 
+function dryRun(input = "now") {
+  input = input.toLowerCase().trim();
+  const isZmanRequest = input.startsWith("zman");
+
+  let time;
+  let hebDate;
+  let pagesize = DEFAULT_PAGESIZE;
+  let returnList = getMinyanim('today');
+  let day = "today";
+
+  if(input === "now") {
+    time = new Date();
+  } else if(isZmanRequest) {
+    returnList = getZmanim('today', 21209);
+    pagesize = 20;
+    time = new Date();
+    hebDate = fetchHebcalDate(day);
+    const inputMatch = input.match(/(?<zmanim>zman|zmanim)\s(?<day>today|tomorrow)?\s(?<zipcode>\d{5})?/);
+    if(inputMatch) {
+      const {day: matchedDay, zipcode} = inputMatch.groups;
+      const zip = zipcode || 21209;
+      if(matchedDay === "tomorrow") {
+        returnList = getZmanim('tomorrow', zip);
+        time.setDate(time.getDate() + 1);
+        day = "tomorrow";
+      } else if(zipcode && zipcode !== "21209") {
+        returnList = getZmanim('today', zip);
+      }
+    }
+    time.setHours(0, 0, 0, 0);
+  } else {
+    const [_day, inputTime, inputPagesize] = parseDateTime(input, day);
+    if(_day === "tomorrow") {
+      time = new Date();
+      time.setDate(time.getDate() + 1);
+      day = _day;
+      returnList = getMinyanim('tomorrow');
+    }
+    if(inputTime) time = inputTime;
+    if(inputPagesize) pagesize = inputPagesize;
+  }
+
+  if(time && pagesize) {
+    const replies = filterAndChunkReplies(returnList, time, pagesize, !isZmanRequest, hebDate);
+    if(replies.length) {
+      replies.forEach(reply => Logger.log(reply));
+    } else {
+      Logger.log(`There are no tefilah times ${day} past ${shortTime(time)}`);
+    }
+  }
+}
+
 function fetchBJLMinyanim(day) {
   let tefilahAbbrev = ["SH", "MI","MM", "MA"];
   let extraArgs = "";
