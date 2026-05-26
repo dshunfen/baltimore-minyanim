@@ -100,6 +100,7 @@ function minyanZmanUpdate() {
   const [todayMinyanList, tomorrowMinyanList] = [getMinyanim('today'), getMinyanim('tomorrow')];
   const [todayZmanimList, tomorrowZmanimList] = [getZmanim('today', 21209), getZmanim('tomorrow', 21209)]
   inbox.forEach(m => {
+    let handled = false;
     try {
       const msgs = m.getMessages();
       const firstMsg = msgs[0];
@@ -119,6 +120,7 @@ function minyanZmanUpdate() {
       if(input === "help") {
         sendMail(firstMsg, "Supply a start time for minyanim (and optional result size).\nExamples: \"now\", \"tomorrow 6pm\", \"6am 10\", \"2:45 PM\", \"315pm\"");
         sendMail(firstMsg, "Or, send \"zman/zmanim\" and \"today/tomorrow\" (optional) and \"21209\" (optional)");
+        handled = true;
       } else if(input === "now") {
         time = new Date();
       } else if(isZmanRequest) {
@@ -168,10 +170,13 @@ function minyanZmanUpdate() {
         } else {
           sendMail(firstMsg, `There are no tefilah times ${day} past ${shortTime(time)}`);
         }
+        handled = true;
       }
     } finally {
-      m.moveToTrash();
-      GmailApp.search("in:sent").forEach(m => m.moveToTrash())
+      if(handled) {
+        m.moveToTrash();
+        GmailApp.search("in:sent").forEach(m => m.moveToTrash())
+      }
     }
   });
 }
