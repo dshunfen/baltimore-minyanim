@@ -249,8 +249,11 @@ function fetchBJLMinyanim(day) {
 function getMinyanim(day) {
   const minyanFileName = `${MINYAN_FILE_PREFIX}-${day}.json`;
   const minyanFiles = DriveApp.getFilesByName(minyanFileName);
+  // Trust today's Drive cache only once the upstream BJL scrape has refreshed.
+  // The GitHub Action runs ~3:49am ET; a Drive file built before then holds
+  // yesterday's schedule and would be locked in for the whole day.
   let safeUpdateHour = new Date();
-  safeUpdateHour.setHours(3,0,0,0);
+  safeUpdateHour.setHours(5,0,0,0);
 
   let minyanList;
   while(minyanFiles.hasNext()) {
@@ -262,14 +265,18 @@ function getMinyanim(day) {
       minyanFile.setTrashed(true);
     }
   }
-  if(!minyanList) {
+  // An empty list means a bad upstream cache (e.g. a Shabbos scrape). Don't serve
+  // or persist it — refetch, and only cache a non-empty result.
+  if(!minyanList || !minyanList.length) {
     minyanList = fetchBJLMinyanim(day);
     if (day === "tomorrow") {
       minyanList.map(([shul, time]) => {
         time.setDate(time.getDate() + 1);
         return [shul, time];})
     }
-    DriveApp.createFile(minyanFileName, JSON.stringify(minyanList));
+    if(minyanList.length) {
+      DriveApp.createFile(minyanFileName, JSON.stringify(minyanList));
+    }
   }
   return minyanList;
 }

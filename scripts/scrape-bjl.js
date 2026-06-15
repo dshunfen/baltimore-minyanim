@@ -1,4 +1,9 @@
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
+
+// BJL lists no minyanim on Shabbos/Yom Tov, so a scrape on those days returns a
+// near-empty page. Never clobber a good cache with such a result — keep the last
+// known-good day instead. Real days have 100+ entries; this floor is well clear of that.
+const MIN_ENTRIES = 20;
 
 const ABBREVS = ['SH', 'MI', 'MM', 'MA'];
 const HEADERS = {
@@ -61,6 +66,11 @@ async function main() {
   for (const day of ['today', 'tomorrow']) {
     const data = await scrape(day);
     const path = `cache/${day}.json`;
+    if (data.length < MIN_ENTRIES) {
+      const prev = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')).length : 0;
+      console.warn(`${path}: only ${data.length} entries (likely Shabbos/Yom Tov or scrape failure) — keeping previous cache of ${prev}`);
+      continue;
+    }
     writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
     console.log(`${path}: ${data.length} entries`);
   }
