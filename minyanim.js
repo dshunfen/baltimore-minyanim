@@ -1,4 +1,3 @@
-const MINYAN_FILE_PREFIX = "minyanim"
 const ZMANIM_FILE_PREFIX = "zmanim"
 const DEFAULT_PAGESIZE = 7
 const TEXT_GATEWAY_EMAIL_MAP = {
@@ -247,36 +246,13 @@ function fetchBJLMinyanim(day) {
 }
 
 function getMinyanim(day) {
-  const minyanFileName = `${MINYAN_FILE_PREFIX}-${day}.json`;
-  const minyanFiles = DriveApp.getFilesByName(minyanFileName);
-  // Trust today's Drive cache only once the upstream BJL scrape has refreshed.
-  // The GitHub Action runs ~3:49am ET; a Drive file built before then holds
-  // yesterday's schedule and would be locked in for the whole day.
-  let safeUpdateHour = new Date();
-  safeUpdateHour.setHours(5,0,0,0);
-
-  let minyanList;
-  while(minyanFiles.hasNext()) {
-    const minyanFile = minyanFiles.next();
-    if(minyanFile.getDateCreated() >= safeUpdateHour) {
-      minyanList = JSON.parse(minyanFile.getBlob().getDataAsString())
-        .map(([shul, time]) => [shul, new Date(time)]);
-    } else {
-      minyanFile.setTrashed(true);
-    }
-  }
-  // An empty list means a bad upstream cache (e.g. a Shabbos scrape). Don't serve
-  // or persist it — refetch, and only cache a non-empty result.
-  if(!minyanList || !minyanList.length) {
-    minyanList = fetchBJLMinyanim(day);
-    if (day === "tomorrow") {
-      minyanList.map(([shul, time]) => {
-        time.setDate(time.getDate() + 1);
-        return [shul, time];})
-    }
-    if(minyanList.length) {
-      DriveApp.createFile(minyanFileName, JSON.stringify(minyanList));
-    }
+  // Read straight from the GitHub cache each time. It's CDN-backed and refreshed
+  // daily by the scrape Action, so a per-request fetch is cheap and always current.
+  // A Drive-side cache used to live here but was the source of day-behind staleness:
+  // it could lock in a pre-refresh (or prior-day) snapshot for the rest of the day.
+  const minyanList = fetchBJLMinyanim(day);
+  if (day === "tomorrow") {
+    minyanList.forEach(([, time]) => time.setDate(time.getDate() + 1));
   }
   return minyanList;
 }
