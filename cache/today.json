@@ -4,6 +4,10 @@
     "5:25 am"
   ],
   [
+    "Agudath Israel of Baltimore",
+    "5:40 am"
+  ],
+  [
     "Kol Torah",
     "5:45 am"
   ],
@@ -24,7 +28,7 @@
     "5:50 am"
   ],
   [
-    "Ohel Yakov",
+    "Darchei Tzedek",
     "5:50 am"
   ],
   [
@@ -33,6 +37,10 @@
   ],
   [
     "Khal Ahavas Yisroel Tzemach Tzedek",
+    "5:55 am"
+  ],
+  [
+    "Ohel Yakov",
     "5:55 am"
   ],
   [
@@ -56,6 +64,10 @@
     "6:10 am"
   ],
   [
+    "Agudath Israel of Baltimore",
+    "6:15 am"
+  ],
+  [
     "Kol Torah",
     "6:15 am"
   ],
@@ -74,10 +86,6 @@
   [
     "Shearith Israel Congregation/ Glen Avenue Shul",
     "6:15 am"
-  ],
-  [
-    "Agudath Israel of Baltimore",
-    "6:20 am"
   ],
   [
     "Bais Medrash of Ranchleigh",
@@ -109,10 +117,6 @@
   ],
   [
     "Chabad of Park Heights (Clarks Lane)",
-    "6:30 am"
-  ],
-  [
-    "Darchei Tzedek",
     "6:30 am"
   ],
   [
@@ -168,10 +172,6 @@
     "6:55 am"
   ],
   [
-    "Agudath Israel of Baltimore",
-    "7:00 am"
-  ],
-  [
     "Bais Haknesses Ohr HaChaim",
     "7:00 am"
   ],
@@ -204,6 +204,10 @@
     "7:00 am"
   ],
   [
+    "Darchei Tzedek",
+    "7:05 am"
+  ],
+  [
     "Bnai Jacob Shaarei Zion Congregation",
     "7:15 am"
   ],
@@ -224,16 +228,16 @@
     "7:20 am"
   ],
   [
+    "Kol Torah",
+    "7:20 am"
+  ],
+  [
     "Ohel Moshe",
     "7:20 am"
   ],
   [
     "Shomrei Emunah Congregation",
     "7:25 am"
-  ],
-  [
-    "Agudath Israel of Baltimore",
-    "7:30 am"
   ],
   [
     "Bais Hamedrash and Mesivta of Baltimore",
@@ -248,15 +252,15 @@
     "7:30 am"
   ],
   [
+    "Agudath Israel of Baltimore",
+    "7:45 am"
+  ],
+  [
     "Bais Haknesses Ohr HaChaim",
     "7:45 am"
   ],
   [
     "Chofetz Chaim Congregation at Talmudical Academy",
-    "7:45 am"
-  ],
-  [
-    "Darchei Tzedek",
     "7:45 am"
   ],
   [
@@ -276,12 +280,12 @@
     "7:55 am"
   ],
   [
-    "Agudath Israel of Baltimore",
+    "Mercaz Torah U'Tefillah",
     "8:00 am"
   ],
   [
-    "Mercaz Torah U'Tefillah",
-    "8:00 am"
+    "Agudath Israel of Baltimore",
+    "8:15 am"
   ],
   [
     "Mercaz Torah U'Tefillah",
@@ -290,10 +294,6 @@
   [
     "Suburban Orthodox Congregation Toras Chaim",
     "8:20 am"
-  ],
-  [
-    "Agudath Israel of Baltimore",
-    "8:30 am"
   ],
   [
     "Beth Joshua Congregation / Melvin J. Berman Hebrew Academy",
@@ -440,8 +440,16 @@
     "5:46 pm"
   ],
   [
+    "Agudath Israel of Baltimore",
+    "6:00 pm"
+  ],
+  [
     "Mercaz Torah U'Tefillah",
     "6:00 pm"
+  ],
+  [
+    "Agudath Israel of Baltimore",
+    "6:30 pm"
   ],
   [
     "Agudah of Greenspring / Adath Yeshurun Mogen Abraham",
@@ -464,7 +472,15 @@
     "6:55 pm"
   ],
   [
+    "Agudath Israel of Baltimore",
+    "6:55 pm"
+  ],
+  [
     "Bais Medrash of Ranchleigh",
+    "6:55 pm"
+  ],
+  [
+    "Darchei Tzedek",
     "6:55 pm"
   ],
   [
@@ -478,10 +494,6 @@
   [
     "Shomrei Emunah Congregation",
     "6:55 pm"
-  ],
-  [
-    "Mercaz Torah U'Tefillah",
-    "7:00 pm"
   ],
   [
     "Bais Haknesses Ohr HaChaim",
@@ -520,15 +532,11 @@
     "7:05 pm"
   ],
   [
-    "Agudath Israel of Baltimore",
-    "7:20 pm"
-  ],
-  [
-    "Mercaz Torah U'Tefillah",
-    "7:30 pm"
-  ],
-  [
     "Bais Haknesses Ohr HaChaim",
+    "8:00 pm"
+  ],
+  [
+    "Agudath Israel of Baltimore",
     "8:00 pm"
   ],
   [
@@ -560,6 +568,10 @@
     "8:45 pm"
   ],
   [
+    "Mercaz Torah U'Tefillah",
+    "8:45 pm"
+  ],
+  [
     "Ohr Yisrael",
     "8:45 pm"
   ],
@@ -581,6 +593,10 @@
   ],
   [
     "Kehilas Bnei Yeshiva",
+    "9:15 pm"
+  ],
+  [
+    "Mercaz Torah U'Tefillah",
     "9:15 pm"
   ],
   [
