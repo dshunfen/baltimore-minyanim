@@ -234,8 +234,8 @@ function dryRun(input = "now") {
 
 const MINYAN_CACHE_URL_PREFIX = "https://raw.githubusercontent.com/dshunfen/baltimore-minyanim/main/cache";
 
-function fetchBJLMinyanim(day) {
-  const url = `${MINYAN_CACHE_URL_PREFIX}/${day}.json`;
+function fetchBJLMinyanim(file) {
+  const url = `${MINYAN_CACHE_URL_PREFIX}/${file}.json`;
   const res = UrlFetchApp.fetch(url).getContentText();
   return JSON.parse(res)
     .map(([shul, timeStr]) => {
@@ -245,12 +245,30 @@ function fetchBJLMinyanim(day) {
     .filter(([_, time]) => time);
 }
 
+// The scrape Action is scheduled overnight but often lands mid-morning. Until it does,
+// today.json still holds yesterday's list and tomorrow.json holds today's — which gets
+// day-specific times wrong (e.g. earlier Mon/Thu shacharis for leining). meta.json says
+// which date each file really holds, so pick the file matching the day being asked for.
+function cacheFileForDay(day) {
+  const dt = new Date();
+  if (day === "tomorrow") {
+    dt.setDate(dt.getDate() + 1);
+  }
+  const wanted = Utilities.formatDate(dt, "America/New_York", "yyyy-MM-dd");
+  try {
+    const meta = JSON.parse(UrlFetchApp.fetch(`${MINYAN_CACHE_URL_PREFIX}/meta.json`).getContentText());
+    return ["today", "tomorrow"].find(file => meta[file] === wanted) || day;
+  } catch (e) {
+    return day;
+  }
+}
+
 function getMinyanim(day) {
   // Read straight from the GitHub cache each time. It's CDN-backed and refreshed
   // daily by the scrape Action, so a per-request fetch is cheap and always current.
   // A Drive-side cache used to live here but was the source of day-behind staleness:
   // it could lock in a pre-refresh (or prior-day) snapshot for the rest of the day.
-  const minyanList = fetchBJLMinyanim(day);
+  const minyanList = fetchBJLMinyanim(cacheFileForDay(day));
   if (day === "tomorrow") {
     minyanList.forEach(([, time]) => time.setDate(time.getDate() + 1));
   }

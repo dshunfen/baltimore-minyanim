@@ -61,8 +61,20 @@ async function scrape(day) {
   return all.sort(([, a], [, b]) => parseTimeMinutes(a) - parseTimeMinutes(b));
 }
 
+// The date (in Baltimore) that a scrape of `day` describes, as YYYY-MM-DD.
+function cacheDate(day) {
+  const dt = new Date();
+  if (day === 'tomorrow') dt.setDate(dt.getDate() + 1);
+  return dt.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+}
+
 async function main() {
   mkdirSync('cache', { recursive: true });
+  // meta.json records which date each cache file actually holds. The scheduled run
+  // often lands hours late, and until it does today.json is still yesterday's list —
+  // the reader uses this to pick the file that really matches the day it wants.
+  const metaPath = 'cache/meta.json';
+  const meta = existsSync(metaPath) ? JSON.parse(readFileSync(metaPath, 'utf8')) : {};
   for (const day of ['today', 'tomorrow']) {
     const data = await scrape(day);
     const path = `cache/${day}.json`;
@@ -72,8 +84,10 @@ async function main() {
       continue;
     }
     writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+    meta[day] = cacheDate(day);
     console.log(`${path}: ${data.length} entries`);
   }
+  writeFileSync(metaPath, JSON.stringify(meta, null, 2) + '\n');
 }
 
 main().catch((err) => {

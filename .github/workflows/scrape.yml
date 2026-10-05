@@ -2,7 +2,9 @@ name: Scrape BJL minyanim
 
 on:
   schedule:
-    - cron: '0 6 * * *'
+    # Scheduled runs are routinely delayed by hours, worst at the top of the hour;
+    # several off-peak attempts make an early refresh much more likely.
+    - cron: '17 6,8,10 * * *'
   workflow_dispatch:
 
 permissions:
