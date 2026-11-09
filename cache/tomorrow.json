@@ -1,26 +1,46 @@
 [
   [
     "Shomrei Emunah Congregation",
-    "6:00 am"
+    "5:45 am"
   ],
   [
     "Agudath Israel of Baltimore",
-    "6:10 am"
-  ],
-  [
-    "Kehillas Shaarei Avodah",
-    "6:15 am"
+    "6:00 am"
   ],
   [
     "Kol Torah",
-    "6:15 am"
+    "6:00 am"
+  ],
+  [
+    "Shearith Israel Congregation/ Glen Avenue Shul",
+    "6:00 am"
+  ],
+  [
+    "Agudah of Greenspring / Adath Yeshurun Mogen Abraham",
+    "6:10 am"
+  ],
+  [
+    "Bnai Jacob Shaarei Zion Congregation",
+    "6:10 am"
+  ],
+  [
+    "Kehilath B'nai Torah",
+    "6:10 am"
+  ],
+  [
+    "Khal Ahavas Yisroel Tzemach Tzedek",
+    "6:10 am"
+  ],
+  [
+    "Shomrei Emunah Congregation",
+    "6:10 am"
   ],
   [
     "Mercaz Torah U'Tefillah",
     "6:15 am"
   ],
   [
-    "Shearith Israel Congregation/ Glen Avenue Shul",
+    "Pikesville Jewish Congregation",
     "6:15 am"
   ],
   [
@@ -28,28 +48,20 @@
     "6:19 am"
   ],
   [
-    "Agudah of Greenspring / Adath Yeshurun Mogen Abraham",
+    "Kehillas Shaarei Avodah",
+    "6:20 am"
+  ],
+  [
+    "Ohr Yisrael",
     "6:20 am"
   ],
   [
     "Arugas HaBosem (Rabbi Taub's)",
-    "6:20 am"
+    "6:30 am"
   ],
   [
-    "Bnai Jacob Shaarei Zion Congregation",
-    "6:20 am"
-  ],
-  [
-    "Kehilath B'nai Torah",
-    "6:20 am"
-  ],
-  [
-    "Pikesville Jewish Congregation",
-    "6:20 am"
-  ],
-  [
-    "Shomrei Emunah Congregation",
-    "6:20 am"
+    "Beit Yaakov",
+    "6:30 am"
   ],
   [
     "Chabad of Park Heights (Clarks Lane)",
@@ -64,10 +76,6 @@
     "6:30 am"
   ],
   [
-    "Khal Ahavas Yisroel Tzemach Tzedek",
-    "6:30 am"
-  ],
-  [
     "Khal Bais Nosson 2901 Taney (corner Taney & Baywood)",
     "6:30 am"
   ],
@@ -76,28 +84,44 @@
     "6:30 am"
   ],
   [
-    "Ohr Yisrael",
+    "Ohel Moshe",
     "6:30 am"
   ],
   [
-    "Ohel Moshe",
+    "Shearith Israel Congregation/ Glen Avenue Shul",
+    "6:30 am"
+  ],
+  [
+    "Suburban Orthodox Congregation Toras Chaim",
+    "6:30 am"
+  ],
+  [
+    "Agudath Israel of Baltimore",
     "6:35 am"
   ],
   [
-    "Beit Yaakov",
-    "6:40 am"
-  ],
-  [
-    "Bnai Jacob Shaarei Zion Congregation",
-    "6:40 am"
-  ],
-  [
     "Bais Medrash of Ranchleigh",
-    "6:45 am"
+    "6:35 am"
   ],
   [
     "Beth Abraham",
-    "6:45 am"
+    "6:35 am"
+  ],
+  [
+    "Bnai Jacob Shaarei Zion Congregation",
+    "6:35 am"
+  ],
+  [
+    "Kol Torah",
+    "6:35 am"
+  ],
+  [
+    "Derech Chaim",
+    "6:40 am"
+  ],
+  [
+    "Shomrei Emunah Congregation",
+    "6:40 am"
   ],
   [
     "Kehilas Bnei Yeshiva",
@@ -112,47 +136,15 @@
     "6:45 am"
   ],
   [
-    "Shearith Israel Congregation/ Glen Avenue Shul",
-    "6:45 am"
-  ],
-  [
-    "Suburban Orthodox Congregation Toras Chaim",
-    "6:45 am"
-  ],
-  [
-    "The Adas: Chofetz Chaim Adas Bnei Israel",
-    "6:45 am"
-  ],
-  [
-    "Agudath Israel of Baltimore",
-    "6:50 am"
-  ],
-  [
     "Bais Hamedrash and Mesivta of Baltimore (Dirshu Minyan)",
     "6:50 am"
   ],
   [
-    "Community Kollel Tiferes Moshe Aryeh",
-    "6:50 am"
-  ],
-  [
-    "Derech Chaim",
-    "6:50 am"
-  ],
-  [
-    "Kol Torah",
-    "6:50 am"
-  ],
-  [
-    "Shomrei Emunah Congregation",
-    "6:50 am"
-  ],
-  [
-    "Kol Torah",
+    "Mercaz Torah U'Tefillah (Ezras Nashim (Kollel ))",
     "6:55 am"
   ],
   [
-    "Mercaz Torah U'Tefillah (Ezras Nashim (Kollel ))",
+    "The Adas: Chofetz Chaim Adas Bnei Israel",
     "6:55 am"
   ],
   [
@@ -172,7 +164,15 @@
     "7:00 am"
   ],
   [
+    "Community Kollel Tiferes Moshe Aryeh",
+    "7:00 am"
+  ],
+  [
     "Kedushas Yisrael",
+    "7:00 am"
+  ],
+  [
+    "Kol Torah",
     "7:00 am"
   ],
   [
@@ -188,11 +188,19 @@
     "7:00 am"
   ],
   [
-    "Machzikei Torah (Sternhill's)",
-    "7:05 am"
+    "Agudath Israel of Baltimore",
+    "7:10 am"
+  ],
+  [
+    "Ohr Yisrael",
+    "7:10 am"
   ],
   [
     "Kollel Nachlas Yosef 2324 Smith Ave",
+    "7:15 am"
+  ],
+  [
+    "Machzikei Torah (Sternhill's)",
     "7:15 am"
   ],
   [
@@ -200,27 +208,15 @@
     "7:15 am"
   ],
   [
-    "Agudath Israel of Baltimore",
-    "7:20 am"
+    "Shomrei Emunah Congregation",
+    "7:15 am"
   ],
   [
     "Beth Tfiloh Congregation",
     "7:20 am"
   ],
   [
-    "Kol Torah",
-    "7:20 am"
-  ],
-  [
     "Ohel Moshe",
-    "7:20 am"
-  ],
-  [
-    "Ohr Yisrael",
-    "7:20 am"
-  ],
-  [
-    "Shomrei Emunah Congregation",
     "7:20 am"
   ],
   [
@@ -233,6 +229,10 @@
   ],
   [
     "Community Kollel Tiferes Moshe Aryeh",
+    "7:30 am"
+  ],
+  [
+    "Darchei Tzedek",
     "7:30 am"
   ],
   [
@@ -249,10 +249,6 @@
   ],
   [
     "Chofetz Chaim Congregation at Talmudical Academy",
-    "7:45 am"
-  ],
-  [
-    "Darchei Tzedek",
     "7:45 am"
   ],
   [
@@ -277,6 +273,10 @@
   ],
   [
     "Mercaz Torah U'Tefillah",
+    "8:00 am"
+  ],
+  [
+    "Shomrei Emunah Congregation",
     "8:00 am"
   ],
   [
@@ -324,10 +324,6 @@
     "9:00 am"
   ],
   [
-    "Shomrei Emunah Congregation",
-    "9:00 am"
-  ],
-  [
     "Suburban Orthodox Congregation Toras Chaim",
     "9:00 am"
   ],
@@ -337,6 +333,10 @@
   ],
   [
     "Mercaz Torah U'Tefillah",
+    "9:15 am"
+  ],
+  [
+    "Shomrei Emunah Congregation",
     "9:15 am"
   ],
   [
@@ -352,10 +352,6 @@
     "10:00 am"
   ],
   [
-    "Khal Ahavas Yisroel Tzemach Tzedek (Yom Kippur Katan)",
-    "12:20 pm"
-  ],
-  [
     "Mercaz Torah U'Tefillah",
     "12:21 pm"
   ],
@@ -366,6 +362,10 @@
   [
     "Kol Torah",
     "12:30 pm"
+  ],
+  [
+    "Agudath Israel of Baltimore",
+    "1:00 pm"
   ],
   [
     "Baltimore Auto Supply",
@@ -380,12 +380,20 @@
     "1:00 pm"
   ],
   [
-    "Agudath Israel of Baltimore",
-    "1:00 pm"
+    "Mercaz Torah U'Tefillah (Ezras Nashim (Kollel ))",
+    "1:20 pm"
   ],
   [
     "Ohel Moshe",
     "1:45 pm"
+  ],
+  [
+    "Wealcatch Insurance Mincha Minyan",
+    "1:45 pm"
+  ],
+  [
+    "Star K Mincha Minyan",
+    "1:50 pm"
   ],
   [
     "Agudath Israel of Baltimore",
@@ -401,6 +409,14 @@
   ],
   [
     "Mercaz Torah U'Tefillah",
+    "2:00 pm"
+  ],
+  [
+    "Pikesville Beis Medrash 15 Walker Ave",
+    "2:15 pm"
+  ],
+  [
+    "Mercaz Torah U'Tefillah",
     "2:30 pm"
   ],
   [
@@ -413,6 +429,10 @@
   ],
   [
     "Kollel of Greenspring 6504 Greenspring Ave",
+    "2:45 pm"
+  ],
+  [
+    "Shearith Israel Congregation/ Glen Avenue Shul",
     "2:45 pm"
   ],
   [
@@ -568,10 +588,6 @@
     "7:15 pm"
   ],
   [
-    "Mercaz Torah U'Tefillah",
-    "7:30 pm"
-  ],
-  [
     "Agudath Israel of Baltimore",
     "7:30 pm"
   ],
@@ -716,11 +732,11 @@
     "9:45 pm"
   ],
   [
-    "Community Kollel Tiferes Moshe Aryeh",
+    "Ohel Moshe",
     "9:50 pm"
   ],
   [
-    "Ohel Moshe",
+    "Community Kollel Tiferes Moshe Aryeh",
     "9:50 pm"
   ],
   [
