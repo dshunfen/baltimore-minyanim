@@ -1,9 +1,5 @@
 [
   [
-    "Shomrei Emunah Congregation",
-    "5:45 am"
-  ],
-  [
     "Agudath Israel of Baltimore",
     "6:00 am"
   ],
@@ -13,6 +9,10 @@
   ],
   [
     "Shearith Israel Congregation/ Glen Avenue Shul",
+    "6:00 am"
+  ],
+  [
+    "Shomrei Emunah Congregation",
     "6:00 am"
   ],
   [
@@ -29,10 +29,6 @@
   ],
   [
     "Khal Ahavas Yisroel Tzemach Tzedek",
-    "6:10 am"
-  ],
-  [
-    "Shomrei Emunah Congregation",
     "6:10 am"
   ],
   [
@@ -53,6 +49,10 @@
   ],
   [
     "Ohr Yisrael",
+    "6:20 am"
+  ],
+  [
+    "Shomrei Emunah Congregation",
     "6:20 am"
   ],
   [
@@ -92,6 +92,10 @@
     "6:30 am"
   ],
   [
+    "Shomrei Emunah Congregation",
+    "6:30 am"
+  ],
+  [
     "Suburban Orthodox Congregation Toras Chaim",
     "6:30 am"
   ],
@@ -117,10 +121,6 @@
   ],
   [
     "Derech Chaim",
-    "6:40 am"
-  ],
-  [
-    "Shomrei Emunah Congregation",
     "6:40 am"
   ],
   [
@@ -184,6 +184,10 @@
     "7:00 am"
   ],
   [
+    "Shomrei Emunah Congregation",
+    "7:00 am"
+  ],
+  [
     "Shomrei Mishmeres",
     "7:00 am"
   ],
@@ -205,10 +209,6 @@
   ],
   [
     "Mercaz Torah U'Tefillah",
-    "7:15 am"
-  ],
-  [
-    "Shomrei Emunah Congregation",
     "7:15 am"
   ],
   [
@@ -241,6 +241,10 @@
   ],
   [
     "Ohr Hamizrach [Sefaradi]",
+    "7:30 am"
+  ],
+  [
+    "Shomrei Emunah Congregation",
     "7:30 am"
   ],
   [
@@ -324,6 +328,10 @@
     "9:00 am"
   ],
   [
+    "Shomrei Emunah Congregation",
+    "9:00 am"
+  ],
+  [
     "Suburban Orthodox Congregation Toras Chaim",
     "9:00 am"
   ],
@@ -333,10 +341,6 @@
   ],
   [
     "Mercaz Torah U'Tefillah",
-    "9:15 am"
-  ],
-  [
-    "Shomrei Emunah Congregation",
     "9:15 am"
   ],
   [
@@ -576,10 +580,6 @@
     "7:00 pm"
   ],
   [
-    "Mercaz Torah U'Tefillah",
-    "7:00 pm"
-  ],
-  [
     "Shomrei Emunah Congregation",
     "7:00 pm"
   ],
@@ -656,6 +656,10 @@
     "8:45 pm"
   ],
   [
+    "Mercaz Torah U'Tefillah",
+    "8:45 pm"
+  ],
+  [
     "Ohr Yisrael",
     "8:45 pm"
   ],
@@ -685,6 +689,10 @@
   ],
   [
     "Kehilas Bnei Yeshiva",
+    "9:15 pm"
+  ],
+  [
+    "Mercaz Torah U'Tefillah",
     "9:15 pm"
   ],
   [
