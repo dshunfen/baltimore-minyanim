@@ -1,6 +1,6 @@
 # Privacy Policy
 
-This applies to the Baltimore minyanim text-message service at (877) 471-3475.
+This applies to the Baltimore minyanim text-message service.
 
 - **What is received:** when you text the service, it receives your phone number
   and the text of your message. This is needed to send you a reply.

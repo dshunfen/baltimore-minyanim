@@ -5,7 +5,7 @@ meant for people with basic (non-smart) phones.
 
 ## How it works
 
-Text **(877) 471-3475** and the service replies with the times you asked for.
+Text the service's number and it replies with the times you asked for.
 It only ever sends a message in reply to one you send: there are no
 subscriptions, reminders or marketing messages, so there is nothing to opt out of.
 Standard message rates from your carrier may apply.

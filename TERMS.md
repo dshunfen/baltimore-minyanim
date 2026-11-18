@@ -1,6 +1,6 @@
 # Terms & Conditions
 
-These apply to the Baltimore minyanim text-message service at (877) 471-3475.
+These apply to the Baltimore minyanim text-message service.
 
 - **The service:** text a time (such as `now` or `6am`) or `zmanim` and receive a
   reply with minyan times or zmanim for Baltimore. It is free and run by an
