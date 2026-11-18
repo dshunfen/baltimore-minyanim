@@ -19,12 +19,17 @@ function checkInbox() {
     return;
   }
   try {
+    // Most checks find nothing new, and trigger run time is capped per day, so the
+    // empty case has to cost as little as possible.
+    if (GmailApp.getInboxUnreadCount() === 0) {
+      return;
+    }
     let handledAny = false;
-    GmailApp.getInboxThreads().forEach(thread => {
+    GmailApp.search("in:inbox is:unread").forEach(thread => {
       // Google Voice keeps every text from one phone in a single thread, alongside
-      // the replies already sent. Each message still in the inbox is its own
+      // the replies already sent. Each unread message in the inbox is its own
       // request, so two texts sent close together both get answered.
-      thread.getMessages().filter(msg => msg.isInInbox() && !msg.isInTrash()).forEach(msg => {
+      thread.getMessages().filter(msg => msg.isInInbox() && msg.isUnread() && !msg.isInTrash()).forEach(msg => {
         try {
           const input = (isGoogleVoice(msg) ? googleVoiceText(msg) : gatewayText(msg)).trim();
           if (input === "linetest" && isGoogleVoice(msg)) {
@@ -32,6 +37,8 @@ function checkInbox() {
           } else {
             const replies = repliesFor(input);
             if (!replies) {
+              // Not a request: mark it read so later checks don't look at it again.
+              msg.markRead();
               return;
             }
             replies.forEach(reply => sendMail(msg, reply));
