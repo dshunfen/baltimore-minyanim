@@ -18,6 +18,8 @@ Standard message rates from your carrier may apply.
 | `6am 10` | Same, with 10 results instead of the default 7 |
 | `zman` or `zmanim` | Today's zmanim for Baltimore (21209) |
 | `zmanim tomorrow 21209` | Zmanim for another day or zip code |
+| `dir seven mile market` | Address, phone and hours for a business |
+| `dir list pizza` | The top three matching businesses |
 | `help` | A short list of these commands |
 
 Example reply to `6am`:
@@ -31,11 +33,13 @@ Heinemann 6:20 AM
 ## How it's built
 
 - `scripts/scrape-bjl.js` runs daily as a GitHub Action and saves the minyan
-  listings from Baltimore Jewish Life into `cache/`.
-- `twilio/functions/sms.protected.js` is a Twilio Function that receives each
-  incoming text, reads the cache (or Hebcal, for zmanim) and replies.
-- `minyanim.js` is the earlier Google Apps Script version, which answered through
-  a carrier email-to-text gateway.
+  listings from Baltimore Jewish Life's minyanim API into `cache/`.
+- `gas/` is the Google Apps Script project that answers the texts. It reads them
+  from a Gmail inbox, where Google Voice forwards them, and replies by email, which
+  Google Voice sends back as a text:
+  - `inbox.js` reads the inbox, picks the service for each text and sends replies.
+  - `minyanim.js`, `zmanim.js` and `directory.js` are the three services.
+  - Deploy with `clasp push` from the repo root.
 
 ## Contact
 

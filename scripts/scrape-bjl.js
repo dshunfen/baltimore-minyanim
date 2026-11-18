@@ -5,60 +5,80 @@ import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
 // known-good day instead. Real days have 100+ entries; this floor is well clear of that.
 const MIN_ENTRIES = 20;
 
-const ABBREVS = ['SH', 'MI', 'MM', 'MA'];
+// BJL's minyanim page is drawn from this API: one request per tefilah for a given
+// date returns the minyanim that apply that day, with holiday schedules chosen by
+// the flags from its zmanim endpoint.
+const API = 'https://baltimorejewishlife.com/wp-json/minyan-times/v1';
+const CITY = 'Baltimore';
+// BJL calculates sunrise and sunset for 21209.
+const ZMANIM_LOCATION = { lat: 39.3716, lng: -76.6744 };
+const TYPES = ['Shacharis', 'Mincha', 'Mincha/Maariv', 'Maariv'];
+const HOLIDAY_FLAGS = [
+  'IsAsaraBiteves', 'IsCholHamoed', 'IsErevPesach', 'IsErevShabbos', 'IsErevTishaBav',
+  'IsErevYomKipper', 'IsErevYomTov', 'IsFastDay', 'IsRoshChodesh', 'IsShabbos',
+  'IsShivaAsarBitammuz', 'IsTaanisEsther', 'IsTishaBav', 'IsTuBeshvat', 'IsTzomGedalia',
+  'IsYomKipper', 'IsYomTov', 'IsBHB', 'IsSlichosBeforeRH', 'IsSlichosAfterRH', 'IsChanuka',
+];
+// How a minyan set relative to the sun is anchored (the API's "formula" codes).
+const FORMULA = { BEFORE_SUNSET: 1, AFTER_SUNSET: 2, BEFORE_SUNRISE: 3, AFTER_SUNRISE: 4, MIDDAY: 5 };
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-  'Accept-Language': 'en-US,en;q=0.9',
+  'Accept': 'application/json',
+  'Referer': 'https://baltimorejewishlife.com/minyanim/',
 };
 
-const NAMED_ENTITIES = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', nbsp: ' ' };
-
-function decodeEntities(s) {
-  return s
-    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
-    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)))
-    .replace(/&([a-z]+);/gi, (m, name) => NAMED_ENTITIES[name.toLowerCase()] ?? m);
+async function getJson(path, params) {
+  const url = `${API}${path}?${new URLSearchParams(params)}`;
+  const res = await fetch(url, { headers: HEADERS });
+  if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
+  return res.json();
 }
 
-function stripTags(s) {
-  return decodeEntities(s.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+function formatMinutes(minutes) {
+  const h = Math.floor(minutes / 60);
+  return `${h % 12 || 12}:${String(minutes % 60).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'}`;
 }
 
-function parseTimeMinutes(s) {
-  const m = s.toLowerCase().match(/(\d{1,2}):?(\d{2})?\s*(am|pm)/);
-  if (!m) return Number.POSITIVE_INFINITY;
-  const [, h, mn, ampm] = m;
-  return (Number(h) % 12) * 60 + Number(mn || 0) + (ampm === 'pm' ? 720 : 0);
+// The API gives zmanim as local clock times in an ISO string, so the hour and
+// minute are read straight from the text.
+function clockMinutes(iso) {
+  const [, h, m] = iso.match(/T(\d{2}):(\d{2})/);
+  return Number(h) * 60 + Number(m);
+}
+
+function minyanMinutes(minyan, zman) {
+  if (minyan.isCustom !== '1') return clockMinutes(`T${minyan.time}`);
+  const offset = Number(minyan.minutes);
+  switch (Number(minyan.formula)) {
+    case FORMULA.BEFORE_SUNSET: return clockMinutes(zman.SunsetDefault) - offset;
+    case FORMULA.AFTER_SUNSET: return clockMinutes(zman.SunsetDefault) + offset;
+    case FORMULA.BEFORE_SUNRISE: return clockMinutes(zman.SunriseDefault) - offset;
+    case FORMULA.AFTER_SUNRISE: return clockMinutes(zman.SunriseDefault) + offset;
+    case FORMULA.MIDDAY: return clockMinutes(zman.MinchaStrict);
+    default: return null;
+  }
 }
 
 async function scrape(day) {
-  const extra = day === 'tomorrow' ? '&direction=next' : '';
-  const all = [];
-  for (const abbrev of ABBREVS) {
-    const url = `https://baltimorejewishlife.com/minyanim/shacharis.php?minyanType=${abbrev}${extra}`;
-    const res = await fetch(url, { headers: HEADERS });
-    if (!res.ok) throw new Error(`${abbrev} ${day}: HTTP ${res.status}`);
-    const html = await res.text();
-    const container = html.match(/<div id="listing-container">([\s\S]*?)<div id="ad">/);
-    if (!container) {
-      console.warn(`${abbrev} ${day}: no listing-container found`);
-      continue;
-    }
-    const ulRegex = /<ul[^>]*>([\s\S]*?)<\/ul>/g;
-    let ulMatch;
-    while ((ulMatch = ulRegex.exec(container[1])) !== null) {
-      const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/g;
-      const lis = [];
-      let liMatch;
-      while ((liMatch = liRegex.exec(ulMatch[1])) !== null) lis.push(liMatch[1]);
-      if (lis.length < 2) continue;
-      const shul = stripTags(lis[0]);
-      const time = stripTags(lis[1]);
-      if (shul && time) all.push([shul, time]);
+  const date = cacheDate(day);
+  const { Time, Zman } = await getJson('/zManim/gps', { date, ...ZMANIM_LOCATION });
+  const holidays = Object.fromEntries(HOLIDAY_FLAGS.map((flag) => [`holidays[${flag}]`, Boolean(Time[flag])]));
+  const all = new Map();
+  for (const type of TYPES) {
+    const minyanim = await getJson('/times', {
+      city: CITY, day: Time.Weekday, nusach: '', sortBy: 'time', rabbi: '', shul: '',
+      date: date.replaceAll('-', '/'), type, teacher: '', ...holidays,
+    });
+    for (const minyan of minyanim) {
+      const minutes = minyanMinutes(minyan, Zman);
+      if (minutes === null || Number.isNaN(minutes)) continue;
+      // A shul listed under two tefilos at the same time is one line in the cache.
+      all.set(`${minyan.location}|${minutes}`, [minyan.location, minutes]);
     }
   }
-  return all.sort(([, a], [, b]) => parseTimeMinutes(a) - parseTimeMinutes(b));
+  return [...all.values()]
+    .sort(([, a], [, b]) => a - b)
+    .map(([shul, minutes]) => [shul, formatMinutes(minutes)]);
 }
 
 // The date (in Baltimore) that a scrape of `day` describes, as YYYY-MM-DD.
