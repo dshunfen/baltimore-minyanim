@@ -9,9 +9,16 @@ const TEXT_GATEWAY_EMAIL_MAP = {
 }
 // Each one-minute trigger fires at its own second within the minute, so several of
 // them check the inbox several times a minute. See installTriggers.
-const CHECKS_PER_MINUTE = 3
+// An idle check measures about 1 second, and a free account allows 90 minutes of
+// trigger run time a day: 2 a minute is about 50 minutes, 3 would be over.
+const CHECKS_PER_MINUTE = 2
 
 function checkInbox() {
+  // Most checks find nothing new, and trigger run time is capped per day, so the
+  // empty case does a single Gmail call and nothing else.
+  if (GmailApp.getInboxUnreadCount() === 0) {
+    return;
+  }
   // Runs can overlap now that there are several triggers; a second one must not
   // answer a text the first is already handling.
   const lock = LockService.getScriptLock();
@@ -19,11 +26,6 @@ function checkInbox() {
     return;
   }
   try {
-    // Most checks find nothing new, and trigger run time is capped per day, so the
-    // empty case has to cost as little as possible.
-    if (GmailApp.getInboxUnreadCount() === 0) {
-      return;
-    }
     let handledAny = false;
     GmailApp.search("in:inbox is:unread").forEach(thread => {
       // Google Voice keeps every text from one phone in a single thread, alongside
