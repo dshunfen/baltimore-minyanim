@@ -76,10 +76,6 @@
     "6:30 am"
   ],
   [
-    "Ohr Yisroel",
-    "6:30 am"
-  ],
-  [
     "Arugas HaBosem (Rabbi Taubs)",
     "6:30 am"
   ],
@@ -88,16 +84,20 @@
     "6:30 am"
   ],
   [
+    "Ohr Yisroel",
+    "6:30 am"
+  ],
+  [
     "Ohel Yakov",
     "6:34 am"
   ],
   [
     "Mercaz Torah U'Tefillah (Eichenstein's)",
-    "6:36 am"
+    "6:37 am"
   ],
   [
     "Khal Ahavas Yisroel Tzemach Tzedek (KAYTT)",
-    "6:36 am"
+    "6:37 am"
   ],
   [
     "Aish Kodesh",
@@ -172,10 +172,6 @@
     "7:00 am"
   ],
   [
-    "Ahavat Shalom",
-    "7:00 am"
-  ],
-  [
     "Aish Kodesh",
     "7:00 am"
   ],
@@ -233,6 +229,10 @@
   ],
   [
     "Shearith Israel Congregation (Glen Avenue Shul)",
+    "7:00 am"
+  ],
+  [
+    "Ahavat Shalom",
     "7:00 am"
   ],
   [
@@ -608,6 +608,10 @@
     "4:30 pm"
   ],
   [
+    "The Shul at the Lubavitch Center",
+    "4:30 pm"
+  ],
+  [
     "Shomrei Emunah Congregation",
     "4:30 pm"
   ],
@@ -644,19 +648,23 @@
     "4:30 pm"
   ],
   [
-    "The Shul at the Lubavitch Center",
+    "Cong Beth Abraham Hertzberg's",
     "4:31 pm"
   ],
   [
-    "Cong Beth Abraham Hertzberg's",
-    "4:32 pm"
+    "Congregation Ohel Levi Yitzchok (Bais Lubavitch)",
+    "4:31 pm"
   ],
   [
-    "Congregation Ohel Levi Yitzchok (Bais Lubavitch)",
-    "4:32 pm"
+    "Aish Kodesh",
+    "4:35 pm"
   ],
   [
     "Bais Haknesses Ohr HaChaim",
+    "4:35 pm"
+  ],
+  [
+    "Chabad Israeli Center",
     "4:35 pm"
   ],
   [
@@ -665,6 +673,10 @@
   ],
   [
     "Suburban Orthodox Congregation Toras Chaim",
+    "4:35 pm"
+  ],
+  [
+    "Machzikei Torah (Sternhills)",
     "4:35 pm"
   ],
   [
@@ -686,18 +698,6 @@
   [
     "Beth Abranham Congregation Tzeirah Anash",
     "4:35 pm"
-  ],
-  [
-    "Aish Kodesh",
-    "4:36 pm"
-  ],
-  [
-    "Chabad Israeli Center",
-    "4:36 pm"
-  ],
-  [
-    "Machzikei Torah (Sternhills)",
-    "4:36 pm"
   ],
   [
     "Ner Tamid",
@@ -928,15 +928,15 @@
     "9:45 pm"
   ],
   [
-    "Ahavat Shalom",
-    "9:45 pm"
-  ],
-  [
     "Kollel of Greenspring",
     "9:45 pm"
   ],
   [
     "Mercaz Torah U'Tefillah (Eichenstein's)",
+    "9:45 pm"
+  ],
+  [
+    "Ahavat Shalom",
     "9:45 pm"
   ],
   [
